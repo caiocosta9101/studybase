@@ -26,11 +26,16 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="border-b border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:z-20 lg:w-72 lg:border-b-0 lg:border-r">
-      <div className="flex h-full flex-col gap-5 p-4 lg:p-5">
-        <Link href="/" className="rounded-lg border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300">
-          <span className="block text-xl font-bold text-slate-950">StudyBase</span>
-          <span className="mt-1 block text-sm leading-5 text-slate-600">Organize o que você aprende.</span>
+    <aside className="border-b border-slate-200 bg-white/95 backdrop-blur lg:fixed lg:inset-y-0 lg:left-0 lg:z-20 lg:w-72 lg:border-b-0 lg:border-r">
+      <div className="flex h-full flex-col gap-6 p-4 lg:p-5">
+        <Link href="/" className="group flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-white">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-slate-950 text-sm font-black text-white shadow-soft">
+            SB
+          </span>
+          <span>
+            <span className="block text-lg font-bold leading-6 text-slate-950">StudyBase</span>
+            <span className="block text-sm leading-5 text-slate-600">Base pessoal de conhecimento</span>
+          </span>
         </Link>
 
         <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0" aria-label="Menu principal">
@@ -44,14 +49,14 @@ export function AppSidebar() {
                 className={cn(
                   "flex min-w-fit items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition",
                   active
-                    ? "bg-slate-950 text-white"
+                    ? "bg-slate-950 text-white shadow-soft"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                 )}
               >
                 <span
                   className={cn(
                     "grid h-8 w-8 shrink-0 place-items-center rounded-md text-xs font-bold",
-                    active ? "bg-white text-slate-950" : "bg-slate-100 text-slate-600"
+                    active ? "bg-white text-slate-950" : "bg-white text-slate-500 ring-1 ring-slate-200"
                   )}
                 >
                   {item.mark}
@@ -63,8 +68,13 @@ export function AppSidebar() {
         </nav>
 
         <div className="mt-auto hidden rounded-lg border border-slate-200 bg-slate-50 p-4 lg:block">
-          <p className="text-sm font-semibold text-slate-950">Fase 1</p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">Base visual estática com dados mockados.</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-slate-950">Sua base</p>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
+              Organizada
+            </span>
+          </div>
+          <p className="mt-2 text-sm leading-5 text-slate-600">Conteúdos separados por área, categoria, tipo e tags.</p>
         </div>
       </div>
     </aside>

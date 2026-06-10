@@ -140,14 +140,14 @@ export const mockNotes: Note[] = [
     readingTime: "5 min",
     highlights: ["Conferir DATABASE_URL.", "Validar se o banco está acessível.", "Rodar migrations na fase certa do projeto."],
     solution:
-      "Conferir o arquivo de variáveis de ambiente, validar a string de conexão, testar o acesso ao banco e executar as migrations quando a fase de banco de dados for implementada."
+      "Conferir o arquivo de variáveis de ambiente, validar a string de conexão, testar o acesso ao banco e executar as migrations quando o banco estiver configurado."
   },
   {
     id: "snippet-normalizar-busca",
     title: "Snippet: normalizar termo de busca",
     description: "Pequeno trecho TypeScript para padronizar a busca por texto no front-end.",
     content:
-      "Normalizar o termo evita diferença entre maiúsculas, minúsculas e espaços acidentais. Na Fase 2 esse tipo de snippet pode ser usado na busca local.",
+      "Normalizar o termo evita diferença entre maiúsculas, minúsculas e espaços acidentais. Esse tipo de snippet ajuda a manter buscas locais mais consistentes.",
     type: "SNIPPET",
     typeLabel: "Snippet",
     area: "Programação",

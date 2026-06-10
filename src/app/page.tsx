@@ -1,16 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import { MetricCard } from "@/components/metric-card";
 import { NoteCard } from "@/components/note-card";
 import { PageHeader } from "@/components/page-header";
-import { mockNotes } from "@/data/mock-notes";
-
-const recentNotes = mockNotes.slice(0, 3);
+import { useNotes } from "@/context/notes-context";
 
 export default function HomePage() {
+  const { areas, categories, favoriteNotes, notes, toggleFavorite } = useNotes();
+  const recentNotes = notes.slice(0, 3);
+
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Base visual"
+        eyebrow="Base pessoal"
         title="StudyBase"
         description="Organize aprendizados de qualquer assunto por área, categoria, tags, tipo de anotação e favoritos."
         action={
@@ -24,9 +27,9 @@ export default function HomePage() {
       />
 
       <section className="grid gap-4 md:grid-cols-3">
-        <MetricCard label="Anotações salvas" value="128" helper="Exemplo visual da base pessoal" tone="sky" />
-        <MetricCard label="Áreas ativas" value="9" helper="Estudos, saúde, finanças e projetos" tone="emerald" />
-        <MetricCard label="Favoritos" value="18" helper="Conteúdos importantes em destaque" tone="rose" />
+        <MetricCard label="Anotações salvas" value={String(notes.length)} helper="Conhecimentos prontos para consulta" tone="sky" />
+        <MetricCard label="Áreas ativas" value={String(areas.length - 1)} helper={`${categories.length - 1} categorias organizadas`} tone="emerald" />
+        <MetricCard label="Favoritos" value={String(favoriteNotes.length)} helper="Conteúdos importantes em destaque" tone="rose" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
@@ -89,12 +92,12 @@ export default function HomePage() {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-950">Exemplos recentes</h2>
-            <p className="mt-1 text-sm text-slate-600">Conteúdos variados para validar o conceito visual.</p>
+            <p className="mt-1 text-sm text-slate-600">Conteúdos variados para mostrar como a base pode ser organizada.</p>
           </div>
         </div>
         <div className="grid gap-4 xl:grid-cols-3">
           {recentNotes.map((note) => (
-            <NoteCard key={note.id} note={note} />
+            <NoteCard key={note.id} note={note} onToggleFavorite={toggleFavorite} />
           ))}
         </div>
       </section>
