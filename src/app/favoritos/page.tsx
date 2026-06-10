@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/page-header";
 import { useNotes } from "@/context/notes-context";
 
 export default function FavoritesPage() {
-  const { favoriteNotes, toggleFavorite } = useNotes();
+  const { clearFavoriteFeedback, favoriteFeedback, favoriteNotes, toggleFavorite } = useNotes();
 
   return (
     <div className="space-y-9">
@@ -21,6 +21,19 @@ export default function FavoritesPage() {
           Favoritos ajudam a destacar conteúdos que precisam ficar sempre fáceis de encontrar.
         </p>
       </div>
+
+      {favoriteFeedback ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold text-emerald-800">{favoriteFeedback}</p>
+          <button
+            type="button"
+            onClick={clearFavoriteFeedback}
+            className="w-fit rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+          >
+            Fechar
+          </button>
+        </div>
+      ) : null}
 
       {favoriteNotes.length > 0 ? (
         <section className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">

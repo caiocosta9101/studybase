@@ -6,6 +6,7 @@ type FilterBarProps = {
   selectedCategory: string;
   selectedType: NoteType | "ALL";
   selectedTag: string;
+  showFavoritesOnly: boolean;
   areas: string[];
   categories: string[];
   tags: string[];
@@ -32,6 +33,7 @@ export function FilterBar({
   selectedCategory,
   selectedType,
   selectedTag,
+  showFavoritesOnly,
   areas,
   categories,
   tags,
@@ -42,6 +44,15 @@ export function FilterBar({
   onTagChange,
   onReset
 }: FilterBarProps) {
+  const activeFilters = [
+    searchTerm.trim() ? `Busca: ${searchTerm.trim()}` : null,
+    selectedArea !== "Todas" ? `Área: ${selectedArea}` : null,
+    selectedCategory !== "Todas" ? `Categoria: ${selectedCategory}` : null,
+    selectedType !== "ALL" ? `Tipo: ${types.find((type) => type.value === selectedType)?.label}` : null,
+    selectedTag !== "Todas" ? `Tag: ${selectedTag}` : null,
+    showFavoritesOnly ? "Somente favoritos" : null
+  ].filter((filter): filter is string => Boolean(filter));
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -89,6 +100,30 @@ export function FilterBar({
           ))}
         </div>
       </div>
+
+      {activeFilters.length > 0 ? (
+        <div className="mt-5 rounded-lg border border-sky-200 bg-sky-50 p-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-bold text-sky-950">Filtros ativos</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {activeFilters.map((filter) => (
+                  <span key={filter} className="rounded-full bg-white px-3 py-1 text-xs font-bold text-sky-700 ring-1 ring-sky-200">
+                    {filter}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onReset}
+              className="h-9 rounded-lg border border-sky-200 bg-white px-3 text-sm font-bold text-sky-700 transition hover:bg-sky-100"
+            >
+              Limpar
+            </button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -45,6 +45,8 @@ type NotesContextValue = {
   notes: Note[];
   filteredNotes: Note[];
   favoriteNotes: Note[];
+  createdNoteId: string | null;
+  favoriteFeedback: string | null;
   filters: NoteFilters;
   areas: string[];
   categories: string[];
@@ -62,6 +64,8 @@ type NotesContextValue = {
   toggleFavorite: (id: string) => void;
   addNote: (input: CreateNoteInput) => Note;
   getNoteById: (id: string) => Note | undefined;
+  clearCreatedNoteFeedback: () => void;
+  clearFavoriteFeedback: () => void;
 };
 
 const initialFilters: NoteFilters = {
@@ -78,6 +82,8 @@ const NotesContext = createContext<NotesContextValue | null>(null);
 export function NotesProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Note[]>(mockNotes);
   const [filters, setFilters] = useState<NoteFilters>(initialFilters);
+  const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
+  const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
 
   const favoriteNotes = useMemo(() => notes.filter((note) => note.isFavorite), [notes]);
 
@@ -146,10 +152,20 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, [notes]);
 
   const toggleFavorite = useCallback((id: string) => {
+    const targetNote = notes.find((note) => note.id === id);
+
+    if (targetNote) {
+      setFavoriteFeedback(
+        targetNote.isFavorite
+          ? `"${targetNote.title}" foi removida dos favoritos.`
+          : `"${targetNote.title}" foi adicionada aos favoritos.`
+      );
+    }
+
     setNotes((currentNotes) =>
       currentNotes.map((note) => (note.id === id ? { ...note, isFavorite: !note.isFavorite } : note))
     );
-  }, []);
+  }, [notes]);
 
   const addNote = useCallback((input: CreateNoteInput) => {
     const note: Note = {
@@ -169,6 +185,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     };
 
     setNotes((currentNotes) => [note, ...currentNotes]);
+    setCreatedNoteId(note.id);
     return note;
   }, []);
 
@@ -179,6 +196,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       notes,
       filteredNotes,
       favoriteNotes,
+      createdNoteId,
+      favoriteFeedback,
       filters,
       areas,
       categories,
@@ -195,12 +214,16 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       resetFilters: () => setFilters(initialFilters),
       toggleFavorite,
       addNote,
-      getNoteById
+      getNoteById,
+      clearCreatedNoteFeedback: () => setCreatedNoteId(null),
+      clearFavoriteFeedback: () => setFavoriteFeedback(null)
     }),
     [
       notes,
       filteredNotes,
       favoriteNotes,
+      createdNoteId,
+      favoriteFeedback,
       filters,
       areas,
       categories,

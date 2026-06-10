@@ -9,7 +9,14 @@ type NoteDetailsViewProps = {
 };
 
 export function NoteDetailsView({ id }: NoteDetailsViewProps) {
-  const { getNoteById, toggleFavorite } = useNotes();
+  const {
+    clearCreatedNoteFeedback,
+    clearFavoriteFeedback,
+    createdNoteId,
+    favoriteFeedback,
+    getNoteById,
+    toggleFavorite
+  } = useNotes();
   const note = getNoteById(id);
 
   if (!note) {
@@ -47,6 +54,34 @@ export function NoteDetailsView({ id }: NoteDetailsViewProps) {
           {note.isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
         </button>
       </div>
+
+      {createdNoteId === note.id ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold text-emerald-800">
+            Anotação criada com sucesso. Ela está disponível nesta sessão local.
+          </p>
+          <button
+            type="button"
+            onClick={clearCreatedNoteFeedback}
+            className="w-fit rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+          >
+            Fechar
+          </button>
+        </div>
+      ) : null}
+
+      {favoriteFeedback ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold text-sky-800">{favoriteFeedback}</p>
+          <button
+            type="button"
+            onClick={clearFavoriteFeedback}
+            className="w-fit rounded-lg border border-sky-200 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
+          >
+            Fechar
+          </button>
+        </div>
+      ) : null}
 
       <header className="rounded-lg border border-slate-200 bg-white p-6 shadow-soft">
         <div className="flex flex-wrap items-center gap-3">

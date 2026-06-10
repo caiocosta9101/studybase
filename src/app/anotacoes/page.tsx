@@ -9,6 +9,8 @@ export default function NotesPage() {
   const {
     areas,
     categories,
+    clearFavoriteFeedback,
+    favoriteFeedback,
     filteredNotes,
     filters,
     notes,
@@ -31,12 +33,26 @@ export default function NotesPage() {
         description="Consulte conteúdos por busca, área, categoria, tags, tipos e favoritos."
       />
 
+      {favoriteFeedback ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold text-emerald-800">{favoriteFeedback}</p>
+          <button
+            type="button"
+            onClick={clearFavoriteFeedback}
+            className="w-fit rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+          >
+            Fechar
+          </button>
+        </div>
+      ) : null}
+
       <FilterBar
         searchTerm={filters.searchTerm}
         selectedArea={filters.area}
         selectedCategory={filters.category}
         selectedType={filters.type}
         selectedTag={filters.tag}
+        showFavoritesOnly={filters.showFavoritesOnly}
         areas={areas}
         categories={categories}
         tags={tags}
@@ -92,6 +108,13 @@ export default function NotesPage() {
           <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
             <h3 className="text-lg font-bold text-slate-950">Nenhuma anotação encontrada</h3>
             <p className="mt-2 text-sm text-slate-600">Ajuste a busca ou limpe os filtros para ver mais resultados.</p>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="mt-5 h-10 rounded-lg bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-slate-800"
+            >
+              Limpar filtros
+            </button>
           </div>
         )}
       </section>
