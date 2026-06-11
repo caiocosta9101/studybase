@@ -1,5 +1,6 @@
 # dependencies
 node_modules
+.npm-cache
 
 # next.js
 .next
@@ -20,6 +21,7 @@ pnpm-debug.log*
 .next-dev.log
 
 # local env files
+.env
 .env*.local
 
 # vercel

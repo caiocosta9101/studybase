@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum NoteType {
+  SIMPLE
+  GUIDE
+  COMPARISON
+  SNIPPET
+  ERROR_SOLUTION
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?
+  notes        Note[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Area {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  categories  Category[]
+  notes       Note[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  areaId    String
+  area      Area     @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  notes     Note[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([areaId, slug])
+  @@index([areaId])
+}
+
+model Note {
+  id         String      @id @default(cuid())
+  title      String
+  slug       String
+  summary    String?
+  content    String?
+  type       NoteType
+  favorite   Boolean     @default(false)
+  areaId     String
+  categoryId String
+  userId     String?
+  area       Area        @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  noteTags   NoteTag[]
+  comparison Comparison?
+  snippets   Snippet[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([areaId])
+  @@index([categoryId])
+  @@index([userId])
+  @@index([type])
+  @@index([favorite])
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  noteTags  NoteTag[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model NoteTag {
+  noteId String
+  tagId  String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+  @@index([tagId])
+}
+
+model Comparison {
+  id         String             @id @default(cuid())
+  noteId     String             @unique
+  problem    String?
+  conclusion String?
+  note       Note               @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  options    ComparisonOption[]
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
+
+model ComparisonOption {
+  id              String     @id @default(cuid())
+  comparisonId    String
+  title           String
+  description     String?
+  whenUse         String?
+  advantages      String?
+  disadvantages   String?
+  attentionPoints String?
+  example         String?
+  order           Int
+  comparison      Comparison @relation(fields: [comparisonId], references: [id], onDelete: Cascade)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([comparisonId])
+}
+
+model Snippet {
+  id          String   @id @default(cuid())
+  noteId      String
+  language    String
+  code        String
+  explanation String?
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([noteId])
+}
