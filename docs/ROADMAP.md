@@ -170,7 +170,7 @@ Nesta fase não implementar:
 * rotas de API sem aprovação;
 * grandes refatorações.
 
-Status: próxima fase.
+Status: concluida.
 
 ---
 
@@ -188,7 +188,7 @@ Possíveis entregas:
 * carregar detalhes de uma nota real;
 * manter a aplicação funcionando sem CRUD real inicialmente.
 
-Status: pendente.
+Status: proxima fase.
 
 ---
 
