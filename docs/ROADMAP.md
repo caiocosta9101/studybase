@@ -188,7 +188,15 @@ Possíveis entregas:
 * carregar detalhes de uma nota real;
 * manter a aplicação funcionando sem CRUD real inicialmente.
 
-Status: proxima fase.
+Status: em andamento
+
+Entrega já concluída:
+
+* listagem real de notas em `/anotacoes` usando PostgreSQL + Prisma.
+
+Próxima entrega recomendada:
+
+* diagnosticar a tela `/anotacoes/[id]` antes de implementar detalhes reais.
 
 ---
 
