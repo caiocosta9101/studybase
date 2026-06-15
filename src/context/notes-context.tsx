@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
-import { areas as initialAreas, mockNotes, noteTypeConfig } from "@/data/mock-notes";
+import { noteTypeConfig } from "@/config/note-type-config";
+import { areas as initialAreas, mockNotes } from "@/data/mock-notes";
 import { Note, NoteType } from "@/types/note";
 
 type NoteFilters = {

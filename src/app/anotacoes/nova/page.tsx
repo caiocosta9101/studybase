@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
-import { noteTypeConfig } from "@/data/mock-notes";
+import { noteTypeConfig } from "@/config/note-type-config";
 import { useNotes } from "@/context/notes-context";
 import { NoteType } from "@/types/note";
 

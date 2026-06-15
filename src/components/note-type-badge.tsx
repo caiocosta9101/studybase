@@ -1,4 +1,4 @@
-import { noteTypeConfig } from "@/data/mock-notes";
+import { noteTypeConfig } from "@/config/note-type-config";
 import { cn } from "@/lib/styles";
 import { NoteType } from "@/types/note";
 
