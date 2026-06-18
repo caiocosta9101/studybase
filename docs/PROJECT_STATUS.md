@@ -11,20 +11,20 @@ Build: passou via Git Bash
 Últimos marcos:
 - Fase 3B: PostgreSQL local, migration e seed concluídos.
 - Fase 3C: planejamento da integração real e diagnóstico dos mocks concluídos.
-- Fase 3D: primeira leitura real implementada em `/anotacoes`.
+- Fase 3D: listagem real implementada em `/anotacoes`.
+- Fase 3D: detalhes reais em `/anotacoes/[id]` concluídos.
 
 Entregas da Fase 3D até agora:
-- `/anotacoes` passou a buscar notas reais do PostgreSQL usando Prisma.
-- Prisma ficou isolado no servidor em `src/lib/`.
-- A listagem recebeu os dados reais já mapeados para a UI.
-- Busca, filtros, contagem, empty state e favorito visual continuam no client.
-- Favoritos continuam simulados, sem escrita no banco.
-- As demais telas continuam usando mocks por enquanto.
+- `/anotacoes` busca notas reais do PostgreSQL usando Prisma.
+- `/anotacoes/[id]` busca detalhes reais por `slug`.
+- Prisma está isolado no servidor.
+- Busca, filtros e favorito visual continuam sem escrita no banco.
+- Mocks continuam nas telas ainda não integradas.
 - Build passou via Git Bash.
-- Testes visuais da listagem foram validados.
+- Testes visuais passaram.
 
 Próximo passo recomendado:
-- Diagnosticar a tela `/anotacoes/[id]` antes de implementar leitura real nos detalhes.
+- Diagnosticar qual próxima tela deve receber dados reais: `/dashboard`, `/favoritos`, `/areas` ou `/tags`.
 
 Fora do escopo atual:
 - CRUD real.

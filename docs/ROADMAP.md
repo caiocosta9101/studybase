@@ -190,13 +190,14 @@ Possíveis entregas:
 
 Status: em andamento
 
-Entrega já concluída:
+Entregas já concluídas:
 
-* listagem real de notas em `/anotacoes` usando PostgreSQL + Prisma.
+* listagem real de notas em `/anotacoes` usando PostgreSQL + Prisma;
+* detalhes reais de notas em `/anotacoes/[id]` usando `slug`.
 
 Próxima entrega recomendada:
 
-* diagnosticar a tela `/anotacoes/[id]` antes de implementar detalhes reais.
+* diagnosticar qual próxima tela deve receber dados reais: `/dashboard`, `/favoritos`, `/areas` ou `/tags`.
 
 ---
 
