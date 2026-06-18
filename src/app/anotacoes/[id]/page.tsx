@@ -1,5 +1,8 @@
+import { notFound } from "next/navigation";
 import { NoteDetailsView } from "@/components/note-details-view";
-import { mockNotes } from "@/data/mock-notes";
+import { getNoteBySlug } from "@/lib/notes/queries";
+
+export const dynamic = "force-dynamic";
 
 type NoteDetailsPageProps = {
   params: Promise<{
@@ -7,14 +10,13 @@ type NoteDetailsPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return mockNotes.map((note) => ({
-    id: note.id
-  }));
-}
-
 export default async function NoteDetailsPage({ params }: NoteDetailsPageProps) {
   const { id } = await params;
+  const note = await getNoteBySlug(id);
 
-  return <NoteDetailsView id={id} />;
+  if (!note) {
+    notFound();
+  }
+
+  return <NoteDetailsView note={note} />;
 }

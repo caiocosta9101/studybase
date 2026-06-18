@@ -1,39 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { NoteTypeBadge } from "@/components/note-type-badge";
-import { useNotes } from "@/context/notes-context";
+import { Note } from "@/types/note";
 
 type NoteDetailsViewProps = {
-  id: string;
+  note: Note;
 };
 
-export function NoteDetailsView({ id }: NoteDetailsViewProps) {
-  const {
-    clearCreatedNoteFeedback,
-    clearFavoriteFeedback,
-    createdNoteId,
-    favoriteFeedback,
-    getNoteById,
-    toggleFavorite
-  } = useNotes();
-  const note = getNoteById(id);
+export function NoteDetailsView({ note }: NoteDetailsViewProps) {
+  const [isFavorite, setIsFavorite] = useState(note.isFavorite);
+  const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
 
-  if (!note) {
-    return (
-      <section className="mx-auto max-w-3xl rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-soft">
-        <h1 className="text-2xl font-bold text-slate-950">Anotação não encontrada</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
-          Essa anotação não existe nos dados mockados ou foi criada em uma sessão que já foi recarregada.
-        </p>
-        <Link
-          href="/anotacoes"
-          className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-slate-800"
-        >
-          Voltar para anotações
-        </Link>
-      </section>
-    );
+  function toggleFavorite() {
+    setIsFavorite((currentValue) => {
+      const nextValue = !currentValue;
+
+      setFavoriteFeedback(
+        nextValue
+          ? `"${note.title}" foi adicionada aos favoritos nesta visualização.`
+          : `"${note.title}" foi removida dos favoritos nesta visualização.`
+      );
+
+      return nextValue;
+    });
   }
 
   return (
@@ -44,38 +35,23 @@ export function NoteDetailsView({ id }: NoteDetailsViewProps) {
         </Link>
         <button
           type="button"
-          onClick={() => toggleFavorite(note.id)}
+          onClick={toggleFavorite}
           className={
-            note.isFavorite
+            isFavorite
               ? "w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
               : "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
           }
         >
-          {note.isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
+          {isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
         </button>
       </div>
-
-      {createdNoteId === note.id ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-emerald-800">
-            Anotação criada com sucesso. Ela está disponível nesta sessão local.
-          </p>
-          <button
-            type="button"
-            onClick={clearCreatedNoteFeedback}
-            className="w-fit rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
-          >
-            Fechar
-          </button>
-        </div>
-      ) : null}
 
       {favoriteFeedback ? (
         <div className="flex flex-col gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-sky-800">{favoriteFeedback}</p>
           <button
             type="button"
-            onClick={clearFavoriteFeedback}
+            onClick={() => setFavoriteFeedback(null)}
             className="w-fit rounded-lg border border-sky-200 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
           >
             Fechar

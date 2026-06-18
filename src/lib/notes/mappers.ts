@@ -1,6 +1,6 @@
 import { noteTypeConfig } from "@/config/note-type-config";
 import { Note } from "@/types/note";
-import type { NoteListItem } from "./queries";
+import type { NoteDetailsItem, NoteListItem } from "./queries";
 
 export function mapNoteListItemToUiNote(note: NoteListItem): Note {
   const content = note.content ?? "";
@@ -21,6 +21,59 @@ export function mapNoteListItemToUiNote(note: NoteListItem): Note {
     readingTime: estimateReadingTime(content),
     highlights: buildHighlights(note.area.name, note.category.name, note.type)
   };
+}
+
+export function mapNoteDetailsToUiNote(note: NoteDetailsItem): Note {
+  const content = note.content ?? "";
+  const description = note.summary?.trim() || createDescriptionFromContent(content);
+  const firstSnippet = note.snippets[0];
+  const comparison = mapComparison(note);
+
+  const uiNote: Note = {
+    id: note.slug,
+    title: note.title,
+    description,
+    content,
+    type: note.type,
+    typeLabel: noteTypeConfig[note.type].label,
+    area: note.area.name,
+    category: note.category.name,
+    tags: note.noteTags.map((noteTag) => noteTag.tag.name),
+    isFavorite: note.favorite,
+    updatedAt: formatDate(note.updatedAt),
+    readingTime: estimateReadingTime(content),
+    highlights: buildHighlights(note.area.name, note.category.name, note.type)
+  };
+
+  if (comparison) {
+    uiNote.comparison = comparison;
+  }
+
+  if (firstSnippet?.code) {
+    uiNote.code = firstSnippet.code;
+  }
+
+  return uiNote;
+}
+
+function mapComparison(note: NoteDetailsItem) {
+  if (!note.comparison) {
+    return undefined;
+  }
+
+  const options = note.comparison.options.map((option) => ({
+    label: option.title,
+    points: [
+      option.description,
+      option.whenUse ? `Quando usar: ${option.whenUse}` : null,
+      option.advantages ? `Vantagens: ${option.advantages}` : null,
+      option.disadvantages ? `Limites: ${option.disadvantages}` : null,
+      option.attentionPoints ? `Atenção: ${option.attentionPoints}` : null,
+      option.example ? `Exemplo: ${option.example}` : null
+    ].filter((point): point is string => Boolean(point))
+  }));
+
+  return options.length > 0 ? options : undefined;
 }
 
 function createDescriptionFromContent(content: string) {
