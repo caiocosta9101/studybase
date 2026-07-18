@@ -126,6 +126,20 @@ export async function getNotesForList() {
   return notes.map(mapNoteListItemToUiNote);
 }
 
+export async function getFavoriteNotes() {
+  const notes = await prisma.note.findMany({
+    where: {
+      favorite: true
+    },
+    orderBy: {
+      updatedAt: "desc"
+    },
+    select: noteListItemSelect
+  });
+
+  return notes.map(mapNoteListItemToUiNote);
+}
+
 export async function getNoteBySlug(slug: string) {
   const note = await prisma.note.findUnique({
     where: {
