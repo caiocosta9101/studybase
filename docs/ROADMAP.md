@@ -36,8 +36,8 @@ O projeto deve evoluir de forma gradual, com etapas pequenas, seguras e bem docu
 | Fase 2.1 | Validações e UX com dados mockados         | Concluída    |
 | Fase 3A  | Prisma e schema inicial                    | Concluída    |
 | Fase 3B  | PostgreSQL local, migration e seed         | Concluída    |
-| Fase 3C  | Planejamento da integração dos dados reais | Próxima fase |
-| Fase 3D  | Leitura real do banco com Prisma           | Pendente     |
+| Fase 3C  | Planejamento da integração dos dados reais | Concluída    |
+| Fase 3D  | Leitura real do banco com Prisma           | Em andamento |
 | Fase 4   | Autenticação real                          | Pendente     |
 | Fase 5   | Refinamento com dados reais                | Pendente     |
 | Fase 6   | Funcionalidades futuras                    | Pendente     |
@@ -186,6 +186,7 @@ Possíveis entregas:
 * carregar categorias reais;
 * carregar tags reais;
 * carregar detalhes de uma nota real;
+* integrar o dashboard com dados reais;
 * manter a aplicação funcionando sem CRUD real inicialmente.
 
 Status: em andamento
@@ -194,10 +195,11 @@ Entregas já concluídas:
 
 * listagem real de notas em `/anotacoes` usando PostgreSQL + Prisma;
 * detalhes reais de notas em `/anotacoes/[id]` usando `slug`.
+* dashboard integrado com dados reais usando Prisma.
 
 Próxima entrega recomendada:
 
-* diagnosticar qual próxima tela deve receber dados reais: `/dashboard`, `/favoritos`, `/areas` ou `/tags`.
+* diagnosticar a próxima tela que substituirá os mocks (`/favoritos`, `/areas` ou `/tags`).
 
 ---
 
