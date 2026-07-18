@@ -194,12 +194,13 @@ Status: em andamento
 Entregas já concluídas:
 
 * listagem real de notas em `/anotacoes` usando PostgreSQL + Prisma;
-* detalhes reais de notas em `/anotacoes/[id]` usando `slug`.
-* dashboard integrado com dados reais usando Prisma.
+* detalhes reais de notas em `/anotacoes/[id]` usando `slug`;
+* dashboard integrado com dados reais usando Prisma;
+* `/favoritos` integrada com leitura real usando Prisma, mantendo a remoção apenas visual e local.
 
 Próxima entrega recomendada:
 
-* diagnosticar a próxima tela que substituirá os mocks (`/favoritos`, `/areas` ou `/tags`).
+* diagnosticar a próxima tela que substituirá os mocks (`/areas` ou `/tags`).
 
 ---
 
@@ -226,7 +227,7 @@ Objetivo: melhorar a experiência da aplicação já funcionando com dados reais
 
 Inclui:
 
-* favoritos reais;
+* persistência real de favoritos;
 * tags;
 * categorias;
 * busca melhorada;
