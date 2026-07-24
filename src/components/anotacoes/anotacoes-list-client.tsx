@@ -7,6 +7,7 @@ import { Note, NoteType } from "@/types/note";
 
 type AnotacoesListClientProps = {
   initialNotes: Note[];
+  initialArea?: string;
 };
 
 type NoteFilters = {
@@ -27,9 +28,12 @@ const initialFilters: NoteFilters = {
   showFavoritesOnly: false
 };
 
-export function AnotacoesListClient({ initialNotes }: AnotacoesListClientProps) {
+export function AnotacoesListClient({ initialNotes, initialArea }: AnotacoesListClientProps) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
-  const [filters, setFilters] = useState<NoteFilters>(initialFilters);
+  const [filters, setFilters] = useState<NoteFilters>(() => ({
+    ...initialFilters,
+    area: initialArea ?? initialFilters.area
+  }));
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
 
   const areas = useMemo(() => ["Todas", ...uniqueValues(notes.map((note) => note.area))], [notes]);

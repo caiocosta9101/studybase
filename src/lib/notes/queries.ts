@@ -115,6 +115,13 @@ export type DashboardData = {
   }>;
 };
 
+export type AreaSummary = {
+  name: string;
+  slug: string;
+  description: string;
+  count: number;
+};
+
 export async function getNotesForList() {
   const notes = await prisma.note.findMany({
     orderBy: {
@@ -138,6 +145,52 @@ export async function getFavoriteNotes() {
   });
 
   return notes.map(mapNoteListItemToUiNote);
+}
+
+export async function getAreaSummaries(): Promise<AreaSummary[]> {
+  const areas = await prisma.area.findMany({
+    where: {
+      notes: {
+        some: {}
+      }
+    },
+    orderBy: {
+      name: "asc"
+    },
+    select: {
+      name: true,
+      slug: true,
+      description: true,
+      _count: {
+        select: {
+          notes: true
+        }
+      }
+    }
+  });
+
+  return areas.map((area) => ({
+    name: area.name,
+    slug: area.slug,
+    description: area.description ?? `Anotações organizadas na área ${area.name}.`,
+    count: area._count.notes
+  }));
+}
+
+export async function getAreaNameBySlug(slug: string) {
+  const area = await prisma.area.findFirst({
+    where: {
+      slug,
+      notes: {
+        some: {}
+      }
+    },
+    select: {
+      name: true
+    }
+  });
+
+  return area?.name;
 }
 
 export async function getNoteBySlug(slug: string) {
