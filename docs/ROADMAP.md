@@ -197,10 +197,11 @@ Entregas já concluídas:
 * detalhes reais de notas em `/anotacoes/[id]` usando `slug`;
 * dashboard integrado com dados reais usando Prisma;
 * `/favoritos` integrada com leitura real usando Prisma, mantendo a remoção apenas visual e local.
+* `/areas` integrada com leitura real e navegação para `/anotacoes?area=<slug>`.
 
 Próxima entrega recomendada:
 
-* diagnosticar a próxima tela que substituirá os mocks (`/areas` ou `/tags`).
+* diagnosticar a substituição dos mocks de `/tags` por leitura real.
 
 ---
 
