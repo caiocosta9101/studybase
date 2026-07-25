@@ -122,6 +122,12 @@ export type AreaSummary = {
   count: number;
 };
 
+export type TagSummary = {
+  name: string;
+  slug: string;
+  count: number;
+};
+
 export async function getNotesForList() {
   const notes = await prisma.note.findMany({
     orderBy: {
@@ -191,6 +197,50 @@ export async function getAreaNameBySlug(slug: string) {
   });
 
   return area?.name;
+}
+
+export async function getTagSummaries(): Promise<TagSummary[]> {
+  const tags = await prisma.tag.findMany({
+    where: {
+      noteTags: {
+        some: {}
+      }
+    },
+    orderBy: {
+      name: "asc"
+    },
+    select: {
+      name: true,
+      slug: true,
+      _count: {
+        select: {
+          noteTags: true
+        }
+      }
+    }
+  });
+
+  return tags.map((tag) => ({
+    name: tag.name,
+    slug: tag.slug,
+    count: tag._count.noteTags
+  }));
+}
+
+export async function getTagNameBySlug(slug: string) {
+  const tag = await prisma.tag.findFirst({
+    where: {
+      slug,
+      noteTags: {
+        some: {}
+      }
+    },
+    select: {
+      name: true
+    }
+  });
+
+  return tag?.name;
 }
 
 export async function getNoteBySlug(slug: string) {

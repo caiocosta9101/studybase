@@ -1,18 +1,11 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
-import { useNotes } from "@/context/notes-context";
+import { getTagSummaries } from "@/lib/notes/queries";
 
-export default function TagsPage() {
-  const router = useRouter();
-  const { resetFilters, setTag, tagSummaries } = useNotes();
+export const dynamic = "force-dynamic";
 
-  function openTag(tag: string) {
-    resetFilters();
-    setTag(tag);
-    router.push("/anotacoes");
-  }
+export default async function TagsPage() {
+  const tagSummaries = await getTagSummaries();
 
   return (
     <div className="space-y-9">
@@ -29,14 +22,13 @@ export default function TagsPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           {tagSummaries.map((tag) => (
-            <button
-              key={tag.name}
-              type="button"
-              onClick={() => openTag(tag.name)}
+            <Link
+              key={tag.slug}
+              href={`/anotacoes?tag=${encodeURIComponent(tag.slug)}`}
               className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
             >
               {tag.name} <span className="text-slate-400">{tag.count}</span>
-            </button>
+            </Link>
           ))}
         </div>
       </section>

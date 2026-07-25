@@ -8,6 +8,7 @@ import { Note, NoteType } from "@/types/note";
 type AnotacoesListClientProps = {
   initialNotes: Note[];
   initialArea?: string;
+  initialTag?: string;
 };
 
 type NoteFilters = {
@@ -28,11 +29,12 @@ const initialFilters: NoteFilters = {
   showFavoritesOnly: false
 };
 
-export function AnotacoesListClient({ initialNotes, initialArea }: AnotacoesListClientProps) {
+export function AnotacoesListClient({ initialNotes, initialArea, initialTag }: AnotacoesListClientProps) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [filters, setFilters] = useState<NoteFilters>(() => ({
     ...initialFilters,
-    area: initialArea ?? initialFilters.area
+    area: initialArea ?? initialFilters.area,
+    tag: initialTag ?? initialFilters.tag
   }));
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
 
