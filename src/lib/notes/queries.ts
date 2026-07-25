@@ -128,6 +128,14 @@ export type TagSummary = {
   count: number;
 };
 
+export type HomeData = {
+  totalNotes: number;
+  usedAreas: number;
+  usedCategories: number;
+  totalFavorites: number;
+  recentNotes: Note[];
+};
+
 export async function getNotesForList() {
   const notes = await prisma.note.findMany({
     orderBy: {
@@ -151,6 +159,46 @@ export async function getFavoriteNotes() {
   });
 
   return notes.map(mapNoteListItemToUiNote);
+}
+
+export async function getHomeData(): Promise<HomeData> {
+  const [totalNotes, usedAreas, usedCategories, totalFavorites, recentNotes] = await Promise.all([
+    prisma.note.count(),
+    prisma.area.count({
+      where: {
+        notes: {
+          some: {}
+        }
+      }
+    }),
+    prisma.category.count({
+      where: {
+        notes: {
+          some: {}
+        }
+      }
+    }),
+    prisma.note.count({
+      where: {
+        favorite: true
+      }
+    }),
+    prisma.note.findMany({
+      orderBy: {
+        updatedAt: "desc"
+      },
+      take: 3,
+      select: noteListItemSelect
+    })
+  ]);
+
+  return {
+    totalNotes,
+    usedAreas,
+    usedCategories,
+    totalFavorites,
+    recentNotes: recentNotes.map(mapNoteListItemToUiNote)
+  };
 }
 
 export async function getAreaSummaries(): Promise<AreaSummary[]> {
