@@ -37,7 +37,7 @@ O projeto deve evoluir de forma gradual, com etapas pequenas, seguras e bem docu
 | Fase 3A  | Prisma e schema inicial                    | Concluída    |
 | Fase 3B  | PostgreSQL local, migration e seed         | Concluída    |
 | Fase 3C  | Planejamento da integração dos dados reais | Concluída    |
-| Fase 3D  | Leitura real do banco com Prisma           | Em andamento |
+| Fase 3D  | Leitura real do banco com Prisma           | Concluída    |
 | Fase 4   | Autenticação real                          | Pendente     |
 | Fase 5   | Refinamento com dados reais                | Pendente     |
 | Fase 6   | Funcionalidades futuras                    | Pendente     |
@@ -176,9 +176,9 @@ Status: concluida.
 
 ## Fase 3D — Leitura real do banco com Prisma
 
-Objetivo: começar a substituir os mocks por dados reais do banco.
+Objetivo: substituir as leituras relevantes baseadas em mocks por dados reais do banco.
 
-Possíveis entregas:
+entregas da fase:
 
 * criar camada simples de acesso aos dados;
 * listar notas reais;
@@ -189,20 +189,23 @@ Possíveis entregas:
 * integrar o dashboard com dados reais;
 * manter a aplicação funcionando sem CRUD real inicialmente.
 
-Status: em andamento
+Status: concluída.
 
 Entregas já concluídas:
 
+* rota `/` integrada com métricas e notas recentes reais;
 * listagem real de notas em `/anotacoes` usando PostgreSQL + Prisma;
 * detalhes reais de notas em `/anotacoes/[id]` usando `slug`;
 * dashboard integrado com dados reais usando Prisma;
 * `/favoritos` integrada com leitura real usando Prisma, mantendo a remoção apenas visual e local.
 * `/areas` integrada com leitura real e navegação para `/anotacoes?area=<slug>`.
 * `/tags` integrada com leitura real e navegação para `/anotacoes?tag=<slug>`.
+* Prisma isolado no servidor, com consultas de leitura centralizadas em `src/lib/notes/queries.ts`;
+* interações de favorito mantidas apenas visuais e locais, sem escrita no banco.
 
-Próxima entrega recomendada:
+Próximo passo recomendado:
 
-* diagnosticar o encerramento da Fase 3D e verificar se ainda existem telas de leitura dependentes de mocks.
+* planejar e aprovar a próxima fase; a Fase 4 permanece pendente e não foi iniciada.
 
 ---
 

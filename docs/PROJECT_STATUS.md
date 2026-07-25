@@ -1,5 +1,5 @@
-Última fase concluída: Fase 3C
-Fase atual: Fase 3D — Leitura real do banco com Prisma
+Última fase concluída: Fase 3D — Leitura real do banco com Prisma
+Fase atual: nenhuma nova fase iniciada; aguardando planejamento e aprovação da próxima fase
 Push: realizado
 
 Banco local: studybase_dev
@@ -11,6 +11,7 @@ Build: passou via Git Bash
 Últimos marcos:
 - Fase 3B: PostgreSQL local, migration e seed concluídos.
 - Fase 3C: planejamento da integração real e diagnóstico dos mocks concluídos.
+- Fase 3D: rota `/` integrada com dados reais usando Prisma.
 - Fase 3D: listagem real implementada em `/anotacoes`.
 - Fase 3D: detalhes reais em `/anotacoes/[id]` concluídos.
 - Fase 3D: dashboard integrado com dados reais usando Prisma.
@@ -18,7 +19,8 @@ Build: passou via Git Bash
 - Fase 3D: `/areas` integrada com dados reais usando Prisma.
 - Fase 3D: `/tags` integrada com dados reais usando Prisma.
 
-Entregas da Fase 3D até agora:
+Entregas concluídas da Fase 3D:
+- `/` busca métricas e notas recentes reais do PostgreSQL usando Prisma.
 - `/anotacoes` busca notas reais do PostgreSQL usando Prisma.
 - `/anotacoes/[id]` busca detalhes reais por `slug`.
 - `/dashboard` busca métricas, favoritos recentes, áreas e distribuição por tipo diretamente do PostgreSQL.
@@ -30,18 +32,21 @@ Entregas da Fase 3D até agora:
 - `/tags` busca tags reais com nome e quantidade de notas associadas.
 - Os links de tags abrem `/anotacoes?tag=<slug>` com o filtro inicial aplicado.
 - Área e tag podem ser usadas simultaneamente como filtros iniciais.
-- Prisma está isolado no servidor.
-- Busca, filtros e demais interações visuais continuam sem escrita no banco.
-- Mocks continuam nas telas e funcionalidades ainda não integradas.
+- Prisma permanece exclusivamente no servidor.
+- As consultas de leitura estão centralizadas em `src/lib/notes/queries.ts`.
+- Não houve escrita no banco durante a Fase 3D.
+- Busca, filtros e demais interações visuais continuam locais e sem escrita no banco.
+- Favoritos continuam apenas visuais e locais, sem persistência.
+- `/anotacoes/nova` continua com criação simulada e local usando os mocks preservados.
 - Build passou via Git Bash.
 - Testes visuais passaram.
 
 Próximo passo recomendado:
-- Diagnosticar se a Fase 3D está completa e identificar eventuais leituras ainda dependentes de mocks.
+- Planejar e aprovar a próxima fase, sem iniciá-la automaticamente.
 
-Fora do escopo atual:
+Fora do escopo da fase 3d:
 - CRUD real.
+- Persistência real de favoritos.
 - Autenticação.
 - IA.
 - API pública.
-- Escrita real de favoritos.
