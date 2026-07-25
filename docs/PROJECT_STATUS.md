@@ -16,6 +16,7 @@ Build: passou via Git Bash
 - Fase 3D: dashboard integrado com dados reais usando Prisma.
 - Fase 3D: `/favoritos` integrada com dados reais usando Prisma.
 - Fase 3D: `/areas` integrada com dados reais usando Prisma.
+- Fase 3D: `/tags` integrada com dados reais usando Prisma.
 
 Entregas da Fase 3D até agora:
 - `/anotacoes` busca notas reais do PostgreSQL usando Prisma.
@@ -26,6 +27,9 @@ Entregas da Fase 3D até agora:
 - `/areas` busca áreas reais com nome, descrição e quantidade de notas.
 - Os links de área abrem `/anotacoes?area=<slug>` com o filtro inicial aplicado.
 - A resolução do slug acontece no servidor; os demais filtros continuam locais.
+- `/tags` busca tags reais com nome e quantidade de notas associadas.
+- Os links de tags abrem `/anotacoes?tag=<slug>` com o filtro inicial aplicado.
+- Área e tag podem ser usadas simultaneamente como filtros iniciais.
 - Prisma está isolado no servidor.
 - Busca, filtros e demais interações visuais continuam sem escrita no banco.
 - Mocks continuam nas telas e funcionalidades ainda não integradas.
@@ -33,7 +37,7 @@ Entregas da Fase 3D até agora:
 - Testes visuais passaram.
 
 Próximo passo recomendado:
-- Diagnosticar a integração real da tela `/tags`.
+- Diagnosticar se a Fase 3D está completa e identificar eventuais leituras ainda dependentes de mocks.
 
 Fora do escopo atual:
 - CRUD real.

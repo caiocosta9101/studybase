@@ -198,10 +198,11 @@ Entregas já concluídas:
 * dashboard integrado com dados reais usando Prisma;
 * `/favoritos` integrada com leitura real usando Prisma, mantendo a remoção apenas visual e local.
 * `/areas` integrada com leitura real e navegação para `/anotacoes?area=<slug>`.
+* `/tags` integrada com leitura real e navegação para `/anotacoes?tag=<slug>`.
 
 Próxima entrega recomendada:
 
-* diagnosticar a substituição dos mocks de `/tags` por leitura real.
+* diagnosticar o encerramento da Fase 3D e verificar se ainda existem telas de leitura dependentes de mocks.
 
 ---
 
