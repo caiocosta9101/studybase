@@ -38,7 +38,7 @@ O projeto deve evoluir de forma gradual, com etapas pequenas, seguras e bem docu
 | Fase 3B  | PostgreSQL local, migration e seed         | Concluída    |
 | Fase 3C  | Planejamento da integração dos dados reais | Concluída    |
 | Fase 3D  | Leitura real do banco com Prisma           | Concluída    |
-| Fase 4   | Autenticação real                          | Pendente     |
+| Fase 4   | Autenticação real                          | Em andamento |
 | Fase 5   | Refinamento com dados reais                | Pendente     |
 | Fase 6   | Funcionalidades futuras                    | Pendente     |
 
@@ -205,7 +205,7 @@ Entregas já concluídas:
 
 Próximo passo recomendado:
 
-* planejar e aprovar a próxima fase; a Fase 4 permanece pendente e não foi iniciada.
+* planejar e aprovar a Fase 4B; a Fase 4 está em andamento após a conclusão da Fase 4A.
 
 ---
 
@@ -222,7 +222,23 @@ Inclui:
 * proteção de rotas;
 * vínculo das anotações ao usuário autenticado.
 
-Status: pendente.
+Status: em andamento.
+
+### Fase 4A — Ativação segura da conta inicial
+
+Status: concluída.
+
+A conta inicial existente recebeu uma credencial segura por script local, usando hash com `scrypt`. A conta e as notas já vinculadas foram preservadas.
+
+Ainda faltam nesta fase:
+
+* login;
+* logout;
+* sessão;
+* proteção de rotas;
+* isolamento das consultas por usuário.
+
+Próximo passo: planejar e aprovar a Fase 4B antes de implementar código adicional.
 
 ---
 

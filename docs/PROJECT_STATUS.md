@@ -1,6 +1,6 @@
-Última fase concluída: Fase 3D — Leitura real do banco com Prisma
-Fase atual: nenhuma nova fase iniciada; aguardando planejamento e aprovação da próxima fase
-Push: realizado
+Última subfase concluída: Fase 4A — Ativação segura da conta inicial
+Fase atual: Fase 4 em andamento; aguardando diagnóstico, planejamento e aprovação da Fase 4B
+Push: pendente; commit de implementação local e documentação ainda não commitada
 
 Banco local: studybase_dev
 Migration: aplicada
@@ -18,6 +18,9 @@ Build: passou via Git Bash
 - Fase 3D: `/favoritos` integrada com dados reais usando Prisma.
 - Fase 3D: `/areas` integrada com dados reais usando Prisma.
 - Fase 3D: `/tags` integrada com dados reais usando Prisma.
+- Fase 4A: conta inicial existente ativada com senha protegida por hash.
+- Fase 4A: notas existentes preservadas e vinculadas ao mesmo usuário.
+- Commit de implementação: `99e1ebd feat: prepara credencial da conta inicial`.
 
 Entregas concluídas da Fase 3D:
 - `/` busca métricas e notas recentes reais do PostgreSQL usando Prisma.
@@ -42,11 +45,18 @@ Entregas concluídas da Fase 3D:
 - Testes visuais passaram.
 
 Próximo passo recomendado:
-- Planejar e aprovar a próxima fase, sem iniciá-la automaticamente.
+- Diagnosticar, planejar e aprovar a Fase 4B antes de qualquer nova implementação.
 
-Fora do escopo da fase 3d:
+Estado atual da Fase 4:
+- A Fase 4 foi iniciada; a Fase 4A está concluída.
+- Login, logout e sessão ainda não foram implementados.
+- As rotas ainda não estão protegidas.
+- As consultas ainda não são filtradas por usuário.
+- Não há CRUD real nem persistência real de favoritos.
+- A Fase 4B deve ser diagnosticada, planejada e aprovada antes de qualquer nova implementação.
+
+Fora do escopo da Fase 4A:
 - CRUD real.
 - Persistência real de favoritos.
-- Autenticação.
 - IA.
 - API pública.
