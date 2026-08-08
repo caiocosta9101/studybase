@@ -205,7 +205,7 @@ Entregas já concluídas:
 
 Próximo passo recomendado:
 
-* diagnosticar, planejar e aprovar a próxima subfase da Fase 4; as Fases 4A e 4B estão concluídas.
+* diagnosticar, planejar e aprovar a próxima subfase da Fase 4; as Fases 4A, 4B e 4C estão concluídas.
 
 ---
 
@@ -246,12 +246,36 @@ Foram implementados:
 * botão de logout acessível na sidebar;
 * documentação segura de `SESSION_SECRET` em `.env.example`.
 
-As rotas continuam públicas e as consultas ainda não são isoladas por usuário, conforme os limites aprovados para esta subfase.
+Os limites aprovados para a Fase 4B foram tratados na subfase seguinte.
 
-Ainda faltam na Fase 4:
+### Fase 4C — Proteção de acesso e leituras isoladas por usuário
 
-* proteção de rotas;
-* isolamento das consultas por usuário.
+Status: concluída.
+
+Foram implementados:
+
+* `requireCurrentUser` reutilizando a sessão existente;
+* proteção server-side de `/`, `/dashboard`, `/anotacoes`, `/anotacoes/[id]`, `/favoritos`, `/areas`, `/tags`, `/anotacoes/nova` e `/configuracoes`;
+* manutenção de `/login` como rota pública;
+* isolamento das nove consultas reais de leitura pelo `userId` autenticado;
+* filtro de ownership em notas, favoritos, métricas, contagens e agregações;
+* áreas, categorias e tags globais no schema, mas apresentadas somente pelas relações com notas do usuário;
+* detalhe de nota consultado por `slug` e `userId`, com `404` para nota inexistente ou fora do ownership;
+* separação de `/anotacoes/nova` em Server Page protegida e Client Component mockado;
+* Prisma mantido exclusivamente no servidor, sem `proxy.ts`, nova dependência, migration, seed ou variável de ambiente.
+
+As rotas internas e as leituras reais estão protegidas e isoladas. O isolamento horizontal entre dois usuários reais não foi provocado em runtime porque isso exigiria criar conta e dados adicionais; a segurança foi validada por revisão do código, TypeScript, build e uso conjunto de `slug` e `userId`.
+
+Objetivo explicitamente definido ainda pendente da Fase 4:
+
+* cadastro;
+
+Funcionalidades ainda não implementadas, mas não exigidas pelo roadmap para concluir a Fase 4:
+
+* recuperação ou troca de senha;
+* rate limiting;
+* sessão persistida no banco;
+* revogação individual de sessões stateless.
 
 Próximo passo: diagnosticar, planejar e aprovar a próxima subfase da Fase 4 antes de implementar código adicional. O roadmap ainda não atribui nome ou escopo fechado a essa subfase.
 
