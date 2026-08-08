@@ -205,7 +205,7 @@ Entregas já concluídas:
 
 Próximo passo recomendado:
 
-* planejar e aprovar a Fase 4B; a Fase 4 está em andamento após a conclusão da Fase 4A.
+* diagnosticar, planejar e aprovar a próxima subfase da Fase 4; as Fases 4A e 4B estão concluídas.
 
 ---
 
@@ -230,15 +230,30 @@ Status: concluída.
 
 A conta inicial existente recebeu uma credencial segura por script local, usando hash com `scrypt`. A conta e as notas já vinculadas foram preservadas.
 
-Ainda faltam nesta fase:
+### Fase 4B — Login, logout e sessão
 
-* login;
-* logout;
-* sessão;
+Status: concluída.
+
+Foram implementados:
+
+* página `/login` sem o shell principal;
+* validação server-side das credenciais;
+* login e logout por Server Actions;
+* sessão stateless em cookie assinado com HMAC-SHA-256;
+* payload versionado com duração de sete dias;
+* leitura e validação server-side da sessão;
+* redirecionamento de `/login` quando a sessão é válida;
+* botão de logout acessível na sidebar;
+* documentação segura de `SESSION_SECRET` em `.env.example`.
+
+As rotas continuam públicas e as consultas ainda não são isoladas por usuário, conforme os limites aprovados para esta subfase.
+
+Ainda faltam na Fase 4:
+
 * proteção de rotas;
 * isolamento das consultas por usuário.
 
-Próximo passo: planejar e aprovar a Fase 4B antes de implementar código adicional.
+Próximo passo: diagnosticar, planejar e aprovar a próxima subfase da Fase 4 antes de implementar código adicional. O roadmap ainda não atribui nome ou escopo fechado a essa subfase.
 
 ---
 
