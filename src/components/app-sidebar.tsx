@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAction } from "@/app/login/actions";
 import { cn } from "@/lib/styles";
 
 const navigation = [
@@ -27,8 +28,8 @@ export function AppSidebar() {
 
   return (
     <aside className="border-b border-slate-200 bg-white/95 backdrop-blur lg:fixed lg:inset-y-0 lg:left-0 lg:z-20 lg:w-72 lg:border-b-0 lg:border-r">
-      <div className="flex h-full flex-col gap-6 p-4 lg:p-5">
-        <Link href="/" className="group flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-white">
+      <div className="flex h-full min-h-0 flex-col gap-6 p-4 lg:p-5">
+        <Link href="/" className="group flex shrink-0 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-white">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-slate-950 text-sm font-black text-white shadow-soft">
             SB
           </span>
@@ -38,7 +39,7 @@ export function AppSidebar() {
           </span>
         </Link>
 
-        <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0" aria-label="Menu principal">
+        <nav className="flex min-h-0 gap-2 overflow-x-auto pb-1 lg:flex-1 lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto lg:pb-0" aria-label="Menu principal">
           {navigation.map((item) => {
             const active = isActive(pathname, item.href);
 
@@ -67,7 +68,7 @@ export function AppSidebar() {
           })}
         </nav>
 
-        <div className="mt-auto hidden rounded-lg border border-slate-200 bg-slate-50 p-4 lg:block">
+        <div className="hidden shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 lg:block">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-slate-950">Sua base</p>
             <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
@@ -76,6 +77,15 @@ export function AppSidebar() {
           </div>
           <p className="mt-2 text-sm leading-5 text-slate-600">Conteúdos separados por área, categoria, tipo e tags.</p>
         </div>
+
+        <form action={logoutAction} className="shrink-0">
+          <button
+            type="submit"
+            className="flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+          >
+            Sair
+          </button>
+        </form>
       </div>
     </aside>
   );
