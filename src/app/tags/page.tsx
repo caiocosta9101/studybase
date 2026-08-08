@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { requireCurrentUser } from "@/lib/auth/session";
 import { getTagSummaries } from "@/lib/notes/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function TagsPage() {
-  const tagSummaries = await getTagSummaries();
+  const currentUser = await requireCurrentUser();
+  const tagSummaries = await getTagSummaries(currentUser.id);
 
   return (
     <div className="space-y-9">

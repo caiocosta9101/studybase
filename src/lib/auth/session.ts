@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 const sessionCookieName = "studybase_session";
@@ -106,6 +107,16 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     name: user.name,
     email: user.email
   };
+}
+
+export async function requireCurrentUser(): Promise<CurrentUser> {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login");
+  }
+
+  return currentUser;
 }
 
 function validateSessionValue(sessionValue: string): SessionPayload | null {

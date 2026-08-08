@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { requireCurrentUser } from "@/lib/auth/session";
 import { getAreaSummaries } from "@/lib/notes/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function AreasPage() {
-  const areas = await getAreaSummaries();
+  const currentUser = await requireCurrentUser();
+  const areas = await getAreaSummaries(currentUser.id);
 
   return (
     <div className="space-y-9">

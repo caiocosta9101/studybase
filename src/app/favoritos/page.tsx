@@ -1,11 +1,13 @@
 import { FavoritesListClient } from "@/components/favoritos/favorites-list-client";
 import { PageHeader } from "@/components/page-header";
+import { requireCurrentUser } from "@/lib/auth/session";
 import { getFavoriteNotes } from "@/lib/notes/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function FavoritesPage() {
-  const favoriteNotes = await getFavoriteNotes();
+  const currentUser = await requireCurrentUser();
+  const favoriteNotes = await getFavoriteNotes(currentUser.id);
 
   return (
     <div className="space-y-9">

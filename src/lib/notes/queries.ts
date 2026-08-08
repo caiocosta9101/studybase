@@ -1,3 +1,5 @@
+import "server-only";
+
 import { Prisma } from "@prisma/client";
 import { noteTypeConfig } from "@/config/note-type-config";
 import { prisma } from "@/lib/prisma";
@@ -136,8 +138,11 @@ export type HomeData = {
   recentNotes: Note[];
 };
 
-export async function getNotesForList() {
+export async function getNotesForList(userId: string) {
   const notes = await prisma.note.findMany({
+    where: {
+      userId
+    },
     orderBy: {
       updatedAt: "desc"
     },
@@ -147,9 +152,10 @@ export async function getNotesForList() {
   return notes.map(mapNoteListItemToUiNote);
 }
 
-export async function getFavoriteNotes() {
+export async function getFavoriteNotes(userId: string) {
   const notes = await prisma.note.findMany({
     where: {
+      userId,
       favorite: true
     },
     orderBy: {
@@ -161,29 +167,41 @@ export async function getFavoriteNotes() {
   return notes.map(mapNoteListItemToUiNote);
 }
 
-export async function getHomeData(): Promise<HomeData> {
+export async function getHomeData(userId: string): Promise<HomeData> {
   const [totalNotes, usedAreas, usedCategories, totalFavorites, recentNotes] = await Promise.all([
-    prisma.note.count(),
+    prisma.note.count({
+      where: {
+        userId
+      }
+    }),
     prisma.area.count({
       where: {
         notes: {
-          some: {}
+          some: {
+            userId
+          }
         }
       }
     }),
     prisma.category.count({
       where: {
         notes: {
-          some: {}
+          some: {
+            userId
+          }
         }
       }
     }),
     prisma.note.count({
       where: {
+        userId,
         favorite: true
       }
     }),
     prisma.note.findMany({
+      where: {
+        userId
+      },
       orderBy: {
         updatedAt: "desc"
       },
@@ -201,11 +219,13 @@ export async function getHomeData(): Promise<HomeData> {
   };
 }
 
-export async function getAreaSummaries(): Promise<AreaSummary[]> {
+export async function getAreaSummaries(userId: string): Promise<AreaSummary[]> {
   const areas = await prisma.area.findMany({
     where: {
       notes: {
-        some: {}
+        some: {
+          userId
+        }
       }
     },
     orderBy: {
@@ -217,7 +237,11 @@ export async function getAreaSummaries(): Promise<AreaSummary[]> {
       description: true,
       _count: {
         select: {
-          notes: true
+          notes: {
+            where: {
+              userId
+            }
+          }
         }
       }
     }
@@ -231,12 +255,14 @@ export async function getAreaSummaries(): Promise<AreaSummary[]> {
   }));
 }
 
-export async function getAreaNameBySlug(slug: string) {
+export async function getAreaNameBySlug(slug: string, userId: string) {
   const area = await prisma.area.findFirst({
     where: {
       slug,
       notes: {
-        some: {}
+        some: {
+          userId
+        }
       }
     },
     select: {
@@ -247,11 +273,15 @@ export async function getAreaNameBySlug(slug: string) {
   return area?.name;
 }
 
-export async function getTagSummaries(): Promise<TagSummary[]> {
+export async function getTagSummaries(userId: string): Promise<TagSummary[]> {
   const tags = await prisma.tag.findMany({
     where: {
       noteTags: {
-        some: {}
+        some: {
+          note: {
+            userId
+          }
+        }
       }
     },
     orderBy: {
@@ -262,7 +292,13 @@ export async function getTagSummaries(): Promise<TagSummary[]> {
       slug: true,
       _count: {
         select: {
-          noteTags: true
+          noteTags: {
+            where: {
+              note: {
+                userId
+              }
+            }
+          }
         }
       }
     }
@@ -275,12 +311,16 @@ export async function getTagSummaries(): Promise<TagSummary[]> {
   }));
 }
 
-export async function getTagNameBySlug(slug: string) {
+export async function getTagNameBySlug(slug: string, userId: string) {
   const tag = await prisma.tag.findFirst({
     where: {
       slug,
       noteTags: {
-        some: {}
+        some: {
+          note: {
+            userId
+          }
+        }
       }
     },
     select: {
@@ -291,10 +331,11 @@ export async function getTagNameBySlug(slug: string) {
   return tag?.name;
 }
 
-export async function getNoteBySlug(slug: string) {
-  const note = await prisma.note.findUnique({
+export async function getNoteBySlug(slug: string, userId: string) {
+  const note = await prisma.note.findFirst({
     where: {
-      slug
+      slug,
+      userId
     },
     select: noteDetailsSelect
   });
@@ -302,30 +343,42 @@ export async function getNoteBySlug(slug: string) {
   return note ? mapNoteDetailsToUiNote(note) : null;
 }
 
-export async function getDashboardData(): Promise<DashboardData> {
+export async function getDashboardData(userId: string): Promise<DashboardData> {
   const [totalNotes, usedCategories, usedTags, totalFavorites, favoriteNotes, typeCounts, areas] = await Promise.all([
-    prisma.note.count(),
+    prisma.note.count({
+      where: {
+        userId
+      }
+    }),
     prisma.category.count({
       where: {
         notes: {
-          some: {}
+          some: {
+            userId
+          }
         }
       }
     }),
     prisma.tag.count({
       where: {
         noteTags: {
-          some: {}
+          some: {
+            note: {
+              userId
+            }
+          }
         }
       }
     }),
     prisma.note.count({
       where: {
+        userId,
         favorite: true
       }
     }),
     prisma.note.findMany({
       where: {
+        userId,
         favorite: true
       },
       orderBy: {
@@ -336,17 +389,31 @@ export async function getDashboardData(): Promise<DashboardData> {
     }),
     prisma.note.groupBy({
       by: ["type"],
+      where: {
+        userId
+      },
       _count: {
         _all: true
       }
     }),
     prisma.area.findMany({
+      where: {
+        notes: {
+          some: {
+            userId
+          }
+        }
+      },
       select: {
         name: true,
         description: true,
         _count: {
           select: {
-            notes: true
+            notes: {
+              where: {
+                userId
+              }
+            }
           }
         }
       }

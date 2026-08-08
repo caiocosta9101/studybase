@@ -1,6 +1,9 @@
 import { PageHeader } from "@/components/page-header";
+import { requireCurrentUser } from "@/lib/auth/session";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requireCurrentUser();
+
   return (
     <div className="space-y-9">
       <PageHeader
