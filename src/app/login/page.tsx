@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { loginAction } from "./actions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -5,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 type LoginPageProps = {
   searchParams: Promise<{
     error?: string | string[];
+    status?: string | string[];
   }>;
 };
 
@@ -17,6 +19,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const params = await searchParams;
   const hasInvalidCredentialsError = params.error === "invalid_credentials";
+  const hasAccountCreatedStatus = params.status === "account_created";
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
@@ -33,6 +36,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         {hasInvalidCredentialsError ? (
           <p role="alert" className="mt-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
             E-mail ou senha inválidos.
+          </p>
+        ) : null}
+
+        {hasAccountCreatedStatus ? (
+          <p role="status" className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+            Sua conta foi criada. Entre para continuar.
           </p>
         ) : null}
 
@@ -63,6 +72,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Entrar
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Ainda não possui uma conta?{" "}
+          <Link href="/cadastro" className="font-bold text-sky-700 hover:text-sky-900">
+            Criar conta
+          </Link>
+        </p>
       </section>
     </main>
   );

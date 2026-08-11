@@ -10,9 +10,10 @@ type AppShellProps = {
 };
 
 export function AppShell({ children }: AppShellProps) {
-  const isLoginPage = usePathname() === "/login";
+  const pathname = usePathname();
+  const isAuthPage = pathname === "/login" || pathname === "/cadastro";
 
-  if (isLoginPage) {
+  if (isAuthPage) {
     return <NotesProvider>{children}</NotesProvider>;
   }
 
