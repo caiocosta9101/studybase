@@ -38,7 +38,7 @@ O projeto deve evoluir de forma gradual, com etapas pequenas, seguras e bem docu
 | Fase 3B  | PostgreSQL local, migration e seed         | Concluída    |
 | Fase 3C  | Planejamento da integração dos dados reais | Concluída    |
 | Fase 3D  | Leitura real do banco com Prisma           | Concluída    |
-| Fase 4   | Autenticação real                          | Em andamento |
+| Fase 4   | Autenticação real                          | Concluída    |
 | Fase 5   | Refinamento com dados reais                | Pendente     |
 | Fase 6   | Funcionalidades futuras                    | Pendente     |
 
@@ -203,9 +203,9 @@ Entregas já concluídas:
 * Prisma isolado no servidor, com consultas de leitura centralizadas em `src/lib/notes/queries.ts`;
 * interações de favorito mantidas apenas visuais e locais, sem escrita no banco.
 
-Próximo passo recomendado:
+Situação posterior:
 
-* diagnosticar, planejar e aprovar a próxima subfase da Fase 4; as Fases 4A, 4B e 4C estão concluídas.
+* a Fase 4 foi concluída pelas subfases 4A, 4B, 4C e 4D.
 
 ---
 
@@ -222,7 +222,7 @@ Inclui:
 * proteção de rotas;
 * vínculo das anotações ao usuário autenticado.
 
-Status: em andamento.
+Status: concluída.
 
 ### Fase 4A — Ativação segura da conta inicial
 
@@ -264,11 +264,28 @@ Foram implementados:
 * separação de `/anotacoes/nova` em Server Page protegida e Client Component mockado;
 * Prisma mantido exclusivamente no servidor, sem `proxy.ts`, nova dependência, migration, seed ou variável de ambiente.
 
-As rotas internas e as leituras reais estão protegidas e isoladas. O isolamento horizontal entre dois usuários reais não foi provocado em runtime porque isso exigiria criar conta e dados adicionais; a segurança foi validada por revisão do código, TypeScript, build e uso conjunto de `slug` e `userId`.
+As rotas internas e as leituras reais estão protegidas e isoladas. O isolamento horizontal foi posteriormente validado na Fase 4D com uma conta nova sem dados próprios.
 
-Objetivo explicitamente definido ainda pendente da Fase 4:
+### Fase 4D — Cadastro de usuário
 
-* cadastro;
+Status: concluída.
+
+Foram implementados:
+
+* página pública `/cadastro` como Server Component;
+* cadastro por Server Action com validações server-side;
+* normalização de nome e e-mail;
+* senha com o hash `scrypt` existente, sem alterar seu valor com `trim`;
+* confirmação de senha e tratamento controlado de e-mail duplicado;
+* criação do usuário já com `passwordHash`;
+* autenticação automática com a sessão stateless existente;
+* redirecionamento para `/dashboard` após sucesso;
+* fallback para `/login` quando a conta é criada, mas a sessão falha;
+* redirecionamento server-side de usuário autenticado que acessa `/cadastro`;
+* integração visual de `/cadastro` sem sidebar e links entre cadastro e login;
+* validação runtime de uma conta nova com zero dados e sem acesso aos dados da conta inicial.
+
+O objetivo `cadastro` está concluído. Todos os objetivos explicitamente definidos para a Fase 4 foram implementados e validados.
 
 Funcionalidades ainda não implementadas, mas não exigidas pelo roadmap para concluir a Fase 4:
 
@@ -277,7 +294,7 @@ Funcionalidades ainda não implementadas, mas não exigidas pelo roadmap para co
 * sessão persistida no banco;
 * revogação individual de sessões stateless.
 
-Próximo passo: diagnosticar, planejar e aprovar a próxima subfase da Fase 4 antes de implementar código adicional. O roadmap ainda não atribui nome ou escopo fechado a essa subfase.
+Situação da Fase 4: concluída. A próxima evolução do projeto deve ser avaliada dentro da Fase 5, sem antecipar funcionalidades não aprovadas.
 
 ---
 

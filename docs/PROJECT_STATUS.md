@@ -1,12 +1,12 @@
-Última subfase concluída: Fase 4C — Proteção de acesso e leituras isoladas por usuário
-Fase atual: Fase 4 em andamento; próxima subfase ainda não definida
-Push: pendente; implementação e documentação da Fase 4C concluídas localmente
+Última subfase concluída: Fase 4D — Cadastro de usuário
+Fase atual: Fase 4 concluída; Fase 5 pendente de avaliação e planejamento
+Push: Fase 4C sincronizada com `origin/main`; Fase 4D ainda sem commit e sem push
 
 Banco local: studybase_dev
 Migration: aplicada
 Seed: executado
 Prisma Studio: validado
-Build: passou na validação final da Fase 4C
+Build: passou na validação final da Fase 4D
 
 Últimos marcos:
 - Fase 3B: PostgreSQL local, migration e seed concluídos.
@@ -26,6 +26,9 @@ Build: passou na validação final da Fase 4C
 - Fase 4C: rotas internas protegidas no servidor com a sessão existente.
 - Fase 4C: leituras reais isoladas pelo `userId` autenticado.
 - Fase 4C: nota inexistente ou fora do ownership retorna `404` sem revelar sua existência.
+- Fase 4D: cadastro público implementado com validação server-side e senha protegida por hash.
+- Fase 4D: autenticação automática após cadastro e fallback seguro para o login.
+- Fase 4D: conta nova validada com zero dados e isolada da conta inicial.
 - Commit de implementação da Fase 4A: `99e1ebd feat: prepara credencial da conta inicial`.
 - Commit de implementação da Fase 4B: `56158fb feat: implementa login logout e sessao`.
 - Commit de implementação da Fase 4C: `9bc1a37 feat: protege rotas e isola leituras por usuario`.
@@ -88,23 +91,44 @@ Entregas concluídas da Fase 4C:
 - Nenhum erro de console relacionado à Fase 4C foi encontrado.
 - O isolamento horizontal entre dois usuários reais não foi testado em runtime, pois exigiria criar um segundo usuário e dados adicionais; essa ressalva não representa falha da subfase.
 
+Entregas concluídas da Fase 4D:
+- `/cadastro` está disponível publicamente como Server Page, sem sidebar.
+- O formulário envia nome, e-mail, senha e confirmação para uma Server Action.
+- Nome e e-mail são normalizados; a senha é preservada sem `trim`.
+- As validações decisivas são executadas no servidor.
+- O cadastro reutiliza `hashPassword` e o `scrypt` existente antes de criar o usuário.
+- A duplicidade é reconhecida somente pelo erro Prisma `P2002` e recebe mensagem genérica.
+- O usuário é criado já com `passwordHash`; senha, confirmação e hash não são expostos em URL, logs ou mensagens da interface.
+- A sessão stateless existente é criada automaticamente após o cadastro, com redirecionamento para `/dashboard`.
+- Se a conta for criada e a sessão falhar, a conta é preservada e o usuário segue para `/login?status=account_created`.
+- Usuário autenticado em `/cadastro` é redirecionado no servidor para `/dashboard`.
+- A página de login manteve seu fluxo de autenticação e recebeu somente o link de cadastro e a mensagem de conta criada.
+- Uma conta sintética foi validada com zero dados, sem acesso aos dados da conta inicial; logout e login posterior também passaram.
+- A conta sintética permaneceu no banco local após os testes, sem registro documental de sua senha.
+- `npm.cmd run type-check`, `npm.cmd run build` e `git diff --check` passaram.
+- Testes manuais/runtime e revisão estática final foram concluídos sem necessidade de correções.
+- Não houve alteração de schema, migration, dependência, seed ou variável de ambiente.
+
 Próximo passo recomendado:
-- Diagnosticar, planejar e aprovar a próxima subfase da Fase 4 antes de qualquer nova implementação; ela ainda não está formalmente definida.
+- Revisar a documentação da Fase 4D antes de autorizar commit e push. Depois do fechamento da fase, avaliar e planejar a Fase 5 antes de qualquer implementação adicional.
 
 Estado atual da Fase 4:
-- A Fase 4 continua em andamento; as Fases 4A, 4B e 4C estão concluídas.
+- A Fase 4 está concluída; as Fases 4A, 4B, 4C e 4D estão implementadas e validadas.
 - Login, logout, senha com hash e sessão estão implementados e validados.
 - As rotas internas aprovadas estão protegidas no servidor.
 - As consultas reais de leitura estão isoladas por usuário.
 - Não há middleware legado nem `proxy.ts`; a proteção ocorre nas Server Pages e na camada de dados.
-- Cadastro continua pendente e é o único objetivo explicitamente definido pelo roadmap ainda não concluído na Fase 4.
+- O cadastro público está implementado, com autenticação automática e validação de uma conta nova com zero dados.
+- Todos os objetivos explicitamente definidos pelo roadmap para a Fase 4 estão concluídos.
 - Recuperação ou troca de senha, rate limiting, sessão persistida no banco e revogação individual das sessões stateless não estão implementados, mas não são requisitos definidos pelo roadmap para concluir a Fase 4.
 - Não há CRUD real nem persistência real de favoritos.
-- A próxima subfase ainda não possui nome ou escopo formalmente aprovados e deve ser diagnosticada, planejada e aprovada antes de qualquer nova implementação.
+- A Fase 4D ainda não possui commit nem push; a documentação aguarda revisão.
 
 Riscos e pendências conhecidos:
 - `prisma/seed.ts` define `passwordHash: null` também no bloco `update` do usuário inicial.
 - Executar o seed depois da ativação pode apagar a credencial da conta inicial; o seed não deve ser executado até uma correção separada ser aprovada.
+- Recuperação ou troca de senha, verificação de e-mail, OAuth, roles, rate limiting, sessão persistida no banco e revogação individual de sessões permanecem adiados.
+- A conta sintética da validação da Fase 4D permanece no banco local por decisão desta etapa.
 - O rodapé dos cards de "Anotações favoritas" pode comprimir área e data em determinadas larguras.
 - O problema dos cards é anterior à Fase 4B; `dashboard` e `note-card` não foram alterados e a correção deve ser tratada separadamente.
 
