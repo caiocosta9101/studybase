@@ -1,61 +1,99 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  createNoteAction,
+  type CreateNoteActionResult,
+  type CreateNoteField
+} from "@/app/anotacoes/nova/actions";
 import { PageHeader } from "@/components/page-header";
 import { noteTypeConfig } from "@/config/note-type-config";
-import { useNotes } from "@/context/notes-context";
-import { NoteType } from "@/types/note";
+import type { NoteCreationCatalog } from "@/lib/notes/queries";
+import type { NoteType } from "@/types/note";
 
-const noteTypes: NoteType[] = ["SIMPLE", "GUIDE", "COMPARISON", "SNIPPET", "ERROR_SOLUTION"];
+const noteTypes = ["SIMPLE", "GUIDE", "ERROR_SOLUTION"] as const;
 
-type FormErrors = Partial<Record<"title" | "type" | "area" | "category" | "content", string>>;
+type FormErrors = Partial<Record<CreateNoteField, string>>;
 
-export function NewNoteForm() {
+type NewNoteFormProps = {
+  catalog: NoteCreationCatalog;
+};
+
+export function NewNoteForm({ catalog }: NewNoteFormProps) {
   const router = useRouter();
-  const { addNote, areas, categories, tags } = useNotes();
-  const areaOptions = areas.filter((area) => area !== "Todas");
-  const categoryOptions = categories.filter((category) => category !== "Todas");
-  const suggestedTags = tags.filter((tag) => tag !== "Todas").slice(0, 10);
-
+  const submissionInProgress = useRef(false);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
   const [type, setType] = useState<NoteType | "">("");
-  const [area, setArea] = useState("");
-  const [category, setCategory] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
+  const [areaId, setAreaId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const selectedArea = useMemo(() => catalog.areas.find((area) => area.id === areaId), [areaId, catalog.areas]);
+  const categoryOptions = selectedArea?.categories ?? [];
+  const hasCreatableCatalog = catalog.areas.some((area) => area.categories.length > 0);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validationErrors = validateForm();
 
-    if (Object.keys(validationErrors).length > 0 || !type) {
-      setErrors(validationErrors);
+    if (submissionInProgress.current) {
       return;
     }
 
-    const note = addNote({
-      title: title.trim(),
-      description: description.trim() || content.trim().slice(0, 160),
-      content: content.trim() || description.trim(),
-      type,
-      area,
-      category,
-      tags: selectedTags.length > 0 ? selectedTags : ["Geral"],
-      isFavorite
-    });
+    const validationErrors = validateForm();
 
-    router.push(`/anotacoes/${note.id}`);
+    if (Object.keys(validationErrors).length > 0 || !isCreatableNoteType(type)) {
+      setErrors(validationErrors);
+      setSubmitError(null);
+      return;
+    }
+
+    submissionInProgress.current = true;
+    setIsSubmitting(true);
+    setErrors({});
+    setSubmitError(null);
+
+    const formData = new FormData();
+    formData.set("title", title);
+    formData.set("summary", summary);
+    formData.set("content", content);
+    formData.set("type", type);
+    formData.set("areaId", areaId);
+    formData.set("categoryId", categoryId);
+    formData.set("favorite", String(isFavorite));
+    selectedTagIds.forEach((tagId) => formData.append("tagIds", tagId));
+
+    let result: CreateNoteActionResult;
+
+    try {
+      result = await createNoteAction(formData);
+    } catch {
+      result = {
+        success: false,
+        message: "Não foi possível salvar a anotação agora. Tente novamente."
+      };
+    }
+
+    if (result.success) {
+      router.push(`/anotacoes/${encodeURIComponent(result.slug)}`);
+      return;
+    }
+
+    setErrors(result.fieldErrors ?? {});
+    setSubmitError(result.message);
+    submissionInProgress.current = false;
+    setIsSubmitting(false);
   }
 
   function validateForm() {
     const nextErrors: FormErrors = {};
     const trimmedTitle = title.trim();
-    const hasDescriptionOrContent = Boolean(description.trim() || content.trim());
 
     if (!trimmedTitle) {
       nextErrors.title = "Informe um título para a anotação.";
@@ -63,26 +101,28 @@ export function NewNoteForm() {
       nextErrors.title = "Use um título com pelo menos 3 caracteres.";
     }
 
-    if (!type) {
+    if (!isCreatableNoteType(type)) {
       nextErrors.type = "Selecione o tipo da anotação.";
     }
 
-    if (!area) {
+    if (!areaId) {
       nextErrors.area = "Selecione uma área.";
     }
 
-    if (!category) {
+    if (!categoryId) {
       nextErrors.category = "Selecione uma categoria.";
+    } else if (!categoryOptions.some((category) => category.id === categoryId)) {
+      nextErrors.category = "Selecione uma categoria pertencente à área escolhida.";
     }
 
-    if (!hasDescriptionOrContent) {
-      nextErrors.content = "Informe um resumo ou um conteúdo para evitar uma anotação vazia.";
+    if (!content.trim()) {
+      nextErrors.content = "Informe o conteúdo da anotação.";
     }
 
     return nextErrors;
   }
 
-  function clearFieldError(field: keyof FormErrors) {
+  function clearFieldError(field: CreateNoteField) {
     setErrors((currentErrors) => {
       if (!currentErrors[field]) {
         return currentErrors;
@@ -94,22 +134,20 @@ export function NewNoteForm() {
     });
   }
 
-  function toggleTag(tag: string) {
-    setSelectedTags((currentTags) =>
-      currentTags.includes(tag) ? currentTags.filter((currentTag) => currentTag !== tag) : [...currentTags, tag]
-    );
+  function selectArea(nextAreaId: string) {
+    setAreaId(nextAreaId);
+    setCategoryId("");
+    clearFieldError("area");
+    clearFieldError("category");
   }
 
-  function addTypedTag() {
-    const tag = tagInput.trim();
-
-    if (!tag || selectedTags.includes(tag)) {
-      setTagInput("");
-      return;
-    }
-
-    setSelectedTags((currentTags) => [...currentTags, tag]);
-    setTagInput("");
+  function toggleTag(tagId: string) {
+    setSelectedTagIds((currentTagIds) =>
+      currentTagIds.includes(tagId)
+        ? currentTagIds.filter((currentTagId) => currentTagId !== tagId)
+        : [...currentTagIds, tagId]
+    );
+    clearFieldError("tags");
   }
 
   return (
@@ -120,7 +158,13 @@ export function NewNoteForm() {
         description="Organize um novo aprendizado com título, resumo, tipo, área, categoria e tags."
       />
 
-      <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[1fr_360px]">
+      {!hasCreatableCatalog ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+          Não há áreas com categorias disponíveis para criar uma anotação.
+        </div>
+      ) : null}
+
+      <form onSubmit={handleSubmit} aria-busy={isSubmitting} className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-soft">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-950">Conteúdo principal</h2>
@@ -133,50 +177,57 @@ export function NewNoteForm() {
             <label className="grid gap-2">
               <span className="text-sm font-bold text-slate-900">Título</span>
               <input
+                name="title"
                 value={title}
+                disabled={isSubmitting}
                 onChange={(event) => {
                   setTitle(event.target.value);
                   clearFieldError("title");
                 }}
                 aria-invalid={Boolean(errors.title)}
-                className={`h-12 rounded-lg border bg-slate-50 px-4 text-sm outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 ${
+                className={`h-12 rounded-lg border bg-slate-50 px-4 text-sm outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
                   errors.title
                     ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                     : "border-slate-300 focus:border-sky-500 focus:ring-sky-100"
                 }`}
-                placeholder="Ex: Fetch vs Axios"
+                placeholder="Ex: Conceitos fundamentais de APIs"
               />
               {errors.title ? <span className="text-sm font-semibold text-rose-700">{errors.title}</span> : null}
             </label>
 
             <label className="grid gap-2">
-              <span className="text-sm font-bold text-slate-900">Resumo</span>
+              <span className="text-sm font-bold text-slate-900">Resumo (opcional)</span>
               <textarea
-                value={description}
+                name="summary"
+                value={summary}
+                disabled={isSubmitting}
                 onChange={(event) => {
-                  setDescription(event.target.value);
-                  clearFieldError("content");
+                  setSummary(event.target.value);
+                  clearFieldError("summary");
                 }}
-                aria-invalid={Boolean(errors.content)}
-                className={`min-h-24 rounded-lg border bg-slate-50 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 ${
-                  errors.content
+                aria-invalid={Boolean(errors.summary)}
+                className={`min-h-24 rounded-lg border bg-slate-50 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
+                  errors.summary
                     ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                     : "border-slate-300 focus:border-sky-500 focus:ring-sky-100"
                 }`}
                 placeholder="Escreva uma descrição curta para encontrar essa anotação depois."
               />
+              {errors.summary ? <span className="text-sm font-semibold text-rose-700">{errors.summary}</span> : null}
             </label>
 
             <label className="grid gap-2">
               <span className="text-sm font-bold text-slate-900">Conteúdo</span>
               <textarea
+                name="content"
                 value={content}
+                disabled={isSubmitting}
                 onChange={(event) => {
                   setContent(event.target.value);
                   clearFieldError("content");
                 }}
                 aria-invalid={Boolean(errors.content)}
-                className={`min-h-72 rounded-lg border bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 ${
+                className={`min-h-72 rounded-lg border bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
                   errors.content
                     ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                     : "border-slate-300 focus:border-sky-500 focus:ring-sky-100"
@@ -191,18 +242,20 @@ export function NewNoteForm() {
         <aside className="space-y-6">
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
             <h2 className="text-base font-bold text-slate-950">Organização</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-600">Campos visuais para mostrar como a anotação será classificada.</p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">Classifique a anotação usando o catálogo disponível.</p>
             <div className="mt-4 grid gap-4">
               <label className="grid gap-2">
                 <span className="text-sm font-bold text-slate-900">Tipo</span>
                 <select
+                  name="type"
                   value={type}
+                  disabled={isSubmitting}
                   onChange={(event) => {
                     setType(event.target.value as NoteType);
                     clearFieldError("type");
                   }}
                   aria-invalid={Boolean(errors.type)}
-                  className={`h-11 rounded-lg border bg-slate-50 px-3 text-sm outline-none focus:bg-white focus:ring-4 ${
+                  className={`h-11 rounded-lg border bg-slate-50 px-3 text-sm outline-none focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
                     errors.type
                       ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                       : "border-slate-300 focus:border-sky-500 focus:ring-sky-100"
@@ -211,9 +264,9 @@ export function NewNoteForm() {
                   <option value="" disabled>
                     Selecione
                   </option>
-                  {noteTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {noteTypeConfig[type].label}
+                  {noteTypes.map((noteType) => (
+                    <option key={noteType} value={noteType}>
+                      {noteTypeConfig[noteType].label}
                     </option>
                   ))}
                 </select>
@@ -223,13 +276,12 @@ export function NewNoteForm() {
               <label className="grid gap-2">
                 <span className="text-sm font-bold text-slate-900">Área</span>
                 <select
-                  value={area}
-                  onChange={(event) => {
-                    setArea(event.target.value);
-                    clearFieldError("area");
-                  }}
+                  name="areaId"
+                  value={areaId}
+                  disabled={isSubmitting || catalog.areas.length === 0}
+                  onChange={(event) => selectArea(event.target.value)}
                   aria-invalid={Boolean(errors.area)}
-                  className={`h-11 rounded-lg border bg-slate-50 px-3 text-sm outline-none focus:bg-white focus:ring-4 ${
+                  className={`h-11 rounded-lg border bg-slate-50 px-3 text-sm outline-none focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
                     errors.area
                       ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                       : "border-slate-300 focus:border-sky-500 focus:ring-sky-100"
@@ -238,8 +290,10 @@ export function NewNoteForm() {
                   <option value="" disabled>
                     Selecione
                   </option>
-                  {areaOptions.map((area) => (
-                    <option key={area}>{area}</option>
+                  {catalog.areas.map((area) => (
+                    <option key={area.id} value={area.id}>
+                      {area.name}
+                    </option>
                   ))}
                 </select>
                 {errors.area ? <span className="text-sm font-semibold text-rose-700">{errors.area}</span> : null}
@@ -248,23 +302,27 @@ export function NewNoteForm() {
               <label className="grid gap-2">
                 <span className="text-sm font-bold text-slate-900">Categoria</span>
                 <select
-                  value={category}
+                  name="categoryId"
+                  value={categoryId}
+                  disabled={isSubmitting || !areaId || categoryOptions.length === 0}
                   onChange={(event) => {
-                    setCategory(event.target.value);
+                    setCategoryId(event.target.value);
                     clearFieldError("category");
                   }}
                   aria-invalid={Boolean(errors.category)}
-                  className={`h-11 rounded-lg border bg-slate-50 px-3 text-sm outline-none focus:bg-white focus:ring-4 ${
+                  className={`h-11 rounded-lg border bg-slate-50 px-3 text-sm outline-none focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
                     errors.category
                       ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                       : "border-slate-300 focus:border-sky-500 focus:ring-sky-100"
                   }`}
                 >
                   <option value="" disabled>
-                    Selecione
+                    {areaId && categoryOptions.length === 0 ? "Nenhuma categoria disponível" : "Selecione"}
                   </option>
                   {categoryOptions.map((category) => (
-                    <option key={category}>{category}</option>
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
                   ))}
                 </select>
                 {errors.category ? <span className="text-sm font-semibold text-rose-700">{errors.category}</span> : null}
@@ -273,39 +331,35 @@ export function NewNoteForm() {
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
-            <h2 className="text-base font-bold text-slate-950">Tags sugeridas</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {suggestedTags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className={
-                    selectedTags.includes(tag)
-                      ? "rounded-full bg-slate-950 px-3 py-1.5 text-xs font-bold text-white"
-                      : "rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700"
-                  }
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+            <h2 className="text-base font-bold text-slate-950">Tags (opcional)</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">Associe somente tags já disponíveis no catálogo.</p>
+            {catalog.tags.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {catalog.tags.map((tag) => {
+                  const isSelected = selectedTagIds.includes(tag.id);
 
-            <div className="mt-4 flex gap-2">
-              <input
-                value={tagInput}
-                onChange={(event) => setTagInput(event.target.value)}
-                className="h-10 min-w-0 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm outline-none focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100"
-                placeholder="Nova tag"
-              />
-              <button
-                type="button"
-                onClick={addTypedTag}
-                className="h-10 rounded-lg border border-slate-300 px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-100"
-              >
-                Adicionar
-              </button>
-            </div>
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      disabled={isSubmitting}
+                      aria-pressed={isSelected}
+                      onClick={() => toggleTag(tag.id)}
+                      className={
+                        isSelected
+                          ? "rounded-full bg-slate-950 px-3 py-1.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                          : "rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-70"
+                      }
+                    >
+                      {tag.name}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-slate-600">Nenhuma tag disponível no catálogo.</p>
+            )}
+            {errors.tags ? <p className="mt-3 text-sm font-semibold text-rose-700">{errors.tags}</p> : null}
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
@@ -315,14 +369,20 @@ export function NewNoteForm() {
                 <span className="block text-sm text-slate-600">Destaca a anotação nas consultas principais.</span>
               </span>
               <input
+                name="favorite"
                 type="checkbox"
                 checked={isFavorite}
+                disabled={isSubmitting}
                 onChange={(event) => setIsFavorite(event.target.checked)}
-                className="h-5 w-5 rounded border-slate-300 text-slate-950 focus:ring-sky-500"
+                className="h-5 w-5 rounded border-slate-300 text-slate-950 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-70"
               />
             </label>
 
-            {Object.keys(errors).length > 0 ? (
+            {submitError ? (
+              <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
+                {submitError}
+              </p>
+            ) : Object.keys(errors).length > 0 ? (
               <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
                 Revise os campos destacados antes de salvar.
               </p>
@@ -331,14 +391,16 @@ export function NewNoteForm() {
             <div className="mt-5 grid gap-3">
               <button
                 type="submit"
-                className="h-11 rounded-lg bg-slate-950 px-4 text-sm font-bold text-white shadow-soft transition hover:bg-slate-800"
+                disabled={isSubmitting || !hasCreatableCatalog}
+                className="h-11 rounded-lg bg-slate-950 px-4 text-sm font-bold text-white shadow-soft transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                Salvar anotação
+                {isSubmitting ? "Salvando…" : "Salvar anotação"}
               </button>
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={() => router.push("/anotacoes")}
-                className="h-11 rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-100"
+                className="h-11 rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 Cancelar
               </button>
@@ -348,4 +410,8 @@ export function NewNoteForm() {
       </form>
     </div>
   );
+}
+
+function isCreatableNoteType(type: NoteType | ""): type is (typeof noteTypes)[number] {
+  return noteTypes.some((noteType) => noteType === type);
 }

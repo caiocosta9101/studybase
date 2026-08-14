@@ -138,6 +138,58 @@ export type HomeData = {
   recentNotes: Note[];
 };
 
+export type NoteCreationCatalog = {
+  areas: Array<{
+    id: string;
+    name: string;
+    categories: Array<{
+      id: string;
+      name: string;
+    }>;
+  }>;
+  tags: Array<{
+    id: string;
+    name: string;
+  }>;
+};
+
+export async function getNoteCreationCatalog(): Promise<NoteCreationCatalog> {
+  const [areas, tags] = await Promise.all([
+    prisma.area.findMany({
+      orderBy: {
+        name: "asc"
+      },
+      select: {
+        id: true,
+        name: true,
+        categories: {
+          orderBy: {
+            name: "asc"
+          },
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    }),
+    prisma.tag.findMany({
+      orderBy: {
+        name: "asc"
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    })
+  ]);
+
+  return {
+    areas,
+    tags
+  };
+}
+
 export async function getNotesForList(userId: string) {
   const notes = await prisma.note.findMany({
     where: {
