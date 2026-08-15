@@ -1,14 +1,15 @@
-Última subfase concluída: Fase 4D — Cadastro de usuário
-Fase atual: Fase 4 concluída; Fase 5 pendente de avaliação e planejamento
-Push: Fase 4C sincronizada com `origin/main`; Fase 4D ainda sem commit e sem push
+Última subfase concluída: Fase 5A — Criação real de anotações básicas
+Fase atual: Fase 5 — Fluxos persistentes e refinamento com dados reais, em andamento
+Próxima subfase: Fase 5B — Edição real de anotações básicas
 
 Banco local: studybase_dev
 Migration: aplicada
 Seed: executado
 Prisma Studio: validado
-Build: passou na validação final da Fase 4D
+Build: passou nas validações técnicas da Fase 5A
 
 Últimos marcos:
+- Fase 3A: Prisma e schema inicial concluídos.
 - Fase 3B: PostgreSQL local, migration e seed concluídos.
 - Fase 3C: planejamento da integração real e diagnóstico dos mocks concluídos.
 - Fase 3D: rota `/` integrada com dados reais usando Prisma.
@@ -29,9 +30,14 @@ Build: passou na validação final da Fase 4D
 - Fase 4D: cadastro público implementado com validação server-side e senha protegida por hash.
 - Fase 4D: autenticação automática após cadastro e fallback seguro para o login.
 - Fase 4D: conta nova validada com zero dados e isolada da conta inicial.
+- Fase 5: diagnóstico, regras funcionais e divisão 5A–5H aprovados.
+- Fase 5A: criação real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada.
 - Commit de implementação da Fase 4A: `99e1ebd feat: prepara credencial da conta inicial`.
 - Commit de implementação da Fase 4B: `56158fb feat: implementa login logout e sessao`.
 - Commit de implementação da Fase 4C: `9bc1a37 feat: protege rotas e isola leituras por usuario`.
+- Commit de implementação da Fase 4D: `6155610 feat: implementa cadastro de usuario`.
+- Commit de documentação e fechamento da Fase 4D: `2007f23 docs: registra conclusao da fase 4d`.
+- Commit de implementação da Fase 5A: `4761324 feat: implementa criacao real de anotacoes`.
 
 Entregas concluídas da Fase 3D:
 - `/` busca métricas e notas recentes reais do PostgreSQL usando Prisma.
@@ -109,20 +115,38 @@ Entregas concluídas da Fase 4D:
 - Testes manuais/runtime e revisão estática final foram concluídos sem necessidade de correções.
 - Não houve alteração de schema, migration, dependência, seed ou variável de ambiente.
 
-Próximo passo recomendado:
-- Revisar a documentação da Fase 4D antes de autorizar commit e push. Depois do fechamento da fase, avaliar e planejar a Fase 5 antes de qualquer implementação adicional.
+Estado atual da Fase 5:
+- A Fase 5 está em andamento e sua divisão em 5A–5H foi aprovada.
+- Fase 5A — Criação real de anotações básicas: concluída e registrada no commit `4761324 feat: implementa criacao real de anotacoes`.
+- A 5A cria `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` com ownership da sessão, validações server-side, slug único, área e categoria compatíveis, tags globais opcionais e favorito inicial persistido.
+- A persistência de `Note` e `NoteTag` é atômica; as leituras afetadas são revalidadas depois da criação confirmada.
+- O catálogo de criação consulta áreas, categorias e tags globais sem depender das notas já pertencentes ao usuário.
+- O fluxo mockado de criação, o `NotesProvider` e os mocks sem consumidores foram removidos na Fase 5A.
+- Fase 5B — Edição real de anotações básicas: próxima subfase, ainda não iniciada.
+- Fase 5C — Exclusão real e fechamento do CRUD básico: pendente.
+- Fase 5D — Favoritos persistentes nas ações rápidas: pendente.
+- Fase 5E — CRUD estruturado de `SNIPPET`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
+- Fase 5F — CRUD estruturado de `COMPARISON`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
+- Fase 5G — Refinamento de busca e filtros: pendente.
+- Fase 5H — Estados, consistência visual e fechamento funcional: pendente.
+- Produção, banco de produção e deploy permanecem fora da Fase 5. Depois da 5H haverá uma revisão separada de prontidão, ainda sem nome ou numeração.
 
-Estado atual da Fase 4:
-- A Fase 4 está concluída; as Fases 4A, 4B, 4C e 4D estão implementadas e validadas.
+Próximo passo recomendado:
+- Diagnosticar e planejar a Fase 5B antes de iniciar a edição real de anotações básicas.
+
+Estado consolidado das Fases 3 e 4:
+- As Fases 3A, 3B, 3C e 3D estão concluídas.
+- A Fase 4 está concluída e publicada; as Fases 4A, 4B, 4C e 4D estão implementadas, validadas e sincronizadas com `origin/main`.
 - Login, logout, senha com hash e sessão estão implementados e validados.
+- A sessão é stateless, usa cookie assinado, HMAC-SHA-256 e payload versionado; não usa JWT.
 - As rotas internas aprovadas estão protegidas no servidor.
 - As consultas reais de leitura estão isoladas por usuário.
 - Não há middleware legado nem `proxy.ts`; a proteção ocorre nas Server Pages e na camada de dados.
 - O cadastro público está implementado, com autenticação automática e validação de uma conta nova com zero dados.
 - Todos os objetivos explicitamente definidos pelo roadmap para a Fase 4 estão concluídos.
 - Recuperação ou troca de senha, rate limiting, sessão persistida no banco e revogação individual das sessões stateless não estão implementados, mas não são requisitos definidos pelo roadmap para concluir a Fase 4.
-- Não há CRUD real nem persistência real de favoritos.
-- A Fase 4D ainda não possui commit nem push; a documentação aguarda revisão.
+- O CRUD real está parcialmente iniciado pela criação da 5A; edição e exclusão permanecem pendentes nas Fases 5B e 5C.
+- O favorito inicial já é persistido na criação da 5A, mas as ações rápidas de favorito continuam pendentes para a Fase 5D.
 
 Riscos e pendências conhecidos:
 - `prisma/seed.ts` define `passwordHash: null` também no bloco `update` do usuário inicial.

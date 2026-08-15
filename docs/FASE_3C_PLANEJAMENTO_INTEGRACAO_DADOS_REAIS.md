@@ -1,5 +1,7 @@
 # Fase 3C — Planejamento da integração dos dados reais
 
+Status: concluída.
+
 ## Objetivo
 
 Planejar como substituir os dados mockados atuais por dados reais do PostgreSQL usando Prisma.
@@ -98,16 +100,16 @@ Antes de alterar código da aplicação, revisar o plano e aprovar a próxima et
 
 ## Checklist de validação
 
-* [ ] Arquivos com mocks mapeados.
-* [ ] Telas dependentes dos mocks identificadas.
-* [ ] Correspondência com `schema.prisma` documentada.
-* [ ] Lacunas do seed identificadas, se existirem.
-* [ ] Estratégia de leitura real definida.
-* [ ] Nenhuma API criada sem aprovação.
-* [ ] Nenhum CRUD real implementado.
-* [ ] Nenhuma autenticação implementada.
-* [ ] Nenhuma IA implementada.
-* [ ] Nenhuma grande refatoração feita sem aprovação.
+* [x] Arquivos com mocks mapeados.
+* [x] Telas dependentes dos mocks identificadas.
+* [x] Correspondência com `schema.prisma` documentada.
+* [x] Lacunas do seed identificadas, se existirem.
+* [x] Estratégia de leitura real definida.
+* [x] Nenhuma API criada sem aprovação.
+* [x] Nenhum CRUD real implementado.
+* [x] Nenhuma autenticação implementada.
+* [x] Nenhuma IA implementada.
+* [x] Nenhuma grande refatoração feita sem aprovação.
 
 ---
 

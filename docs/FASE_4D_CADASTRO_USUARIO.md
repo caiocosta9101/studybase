@@ -178,3 +178,18 @@ Permanecem fora do escopo:
 * CRUD real e persistência real de favoritos.
 
 Esses itens não são objetivos explícitos pendentes da Fase 4 no roadmap e não impedem sua conclusão.
+
+---
+
+## Commits publicados
+
+```txt
+6155610 feat: implementa cadastro de usuario
+2007f23 docs: registra conclusao da fase 4d
+```
+
+---
+
+## Situação posterior
+
+A Fase 4 foi encerrada e publicada com as Fases 4A–4D concluídas. A Fase 5 foi posteriormente diagnosticada, estruturada em 5A–5H e iniciada. A Fase 5A concluiu a criação real de anotações básicas no commit `4761324 feat: implementa criacao real de anotacoes`.

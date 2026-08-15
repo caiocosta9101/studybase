@@ -195,4 +195,8 @@ Builds e testes visuais das rotas integradas foram validados ao longo da fase.
 
 O StudyBase passou a usar leitura real do PostgreSQL com Prisma em todas as telas de leitura relevantes: `/`, `/dashboard`, `/anotacoes`, `/anotacoes/[id]`, `/favoritos`, `/areas` e `/tags`.
 
-Prisma permanece exclusivamente no servidor, e as consultas de leitura estão centralizadas em `src/lib/notes/queries.ts`. Não houve escrita no banco pela aplicação durante a fase. CRUD real, persistência de favoritos, autenticação, IA e API pública permanecem fora do escopo. A Fase 4 continua pendente e não foi iniciada.
+Prisma permaneceu exclusivamente no servidor, e as consultas de leitura foram centralizadas em `src/lib/notes/queries.ts`. Não houve escrita no banco pela aplicação durante a fase. CRUD real, persistência de favoritos, autenticação, IA e API pública ficaram fora do escopo da Fase 3D.
+
+## Situação posterior
+
+Depois da conclusão da Fase 3D, as Fases 4A, 4B, 4C e 4D implementaram e publicaram a autenticação real. A substituição dos fluxos locais restantes começou posteriormente na Fase 5.

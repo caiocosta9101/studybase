@@ -156,6 +156,6 @@ A proteção foi validada por revisão do código, TypeScript, build, filtros ob
 
 ---
 
-## Próximo passo recomendado
+## Situação posterior
 
-Diagnosticar, planejar e aprovar a próxima subfase da Fase 4 antes de implementar código adicional. O roadmap atual ainda não define nome ou escopo fechado para essa próxima subfase.
+A Fase 4D implementou o cadastro público de usuário e validou em runtime o isolamento horizontal com uma conta nova sem dados próprios. Com isso, as Fases 4A–4D foram concluídas e publicadas.

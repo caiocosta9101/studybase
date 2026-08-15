@@ -2,7 +2,7 @@
 
 ## Status
 
-Planejada.
+Concluída.
 
 ## Objetivo
 
@@ -272,18 +272,12 @@ A Fase 3B será considerada concluída quando:
 
 ---
 
-## Próxima fase prevista
+## Situação posterior
 
-Após concluir a Fase 3B, a próxima fase natural será a Fase 3C.
+A Fase 3B foi concluída com PostgreSQL local, migration inicial, seed, validação no Prisma Studio e build. A implementação foi publicada no commit:
 
-Sugestão:
+```txt
+76abe52 feat: configure postgres migration and seed
+```
 
-Fase 3C — Primeira leitura real do banco.
-
-Objetivo provável:
-
-* Criar uma camada segura para buscar dados reais do banco
-* Substituir gradualmente parte dos dados mockados por dados vindos do PostgreSQL local
-* Começar apenas com leitura
-* Ainda não implementar CRUD completo
-* Ainda não implementar autenticação real
+Na sequência, a Fase 3C realizou o diagnóstico e o planejamento da integração dos dados reais. A leitura real foi implementada gradualmente na Fase 3D.

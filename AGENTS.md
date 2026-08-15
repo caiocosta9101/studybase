@@ -33,7 +33,7 @@ Usar preferencialmente:
 * Tailwind CSS;
 * PostgreSQL;
 * Prisma;
-* autenticação com JWT/cookies;
+* autenticação com sessão stateless em cookie assinado;
 * deploy futuro na Vercel;
 * banco futuro no Neon.
 
@@ -159,7 +159,7 @@ Adicionar:
 * models principais;
 * conexão com banco;
 * migrations;
-* rotas de API para anotações.
+* camada server-side de acesso aos dados.
 
 ### Fase 4 — Autenticação
 
@@ -168,23 +168,26 @@ Adicionar:
 * cadastro;
 * login;
 * senha com hash;
-* sessão com JWT/cookie;
+* sessão stateless em cookie assinado;
 * proteção de rotas;
 * vincular anotações ao usuário autenticado.
 
-### Fase 5 — Refinamento
+### Fase 5 — Fluxos persistentes e refinamento com dados reais
 
 Adicionar:
 
-* favoritos;
-* tags;
-* categorias;
+* criação, edição e exclusão reais de anotações;
+* favoritos persistentes;
+* uso real do catálogo global de áreas, categorias e tags;
+* CRUD estruturado de snippets e comparações após aprovação específica de suas regras;
 * busca melhorada;
 * filtros combinados;
 * mensagens de erro;
 * loading states;
 * empty states;
 * melhoria visual.
+
+A divisão aprovada da Fase 5 em 5A–5H deve ser consultada no `docs/ROADMAP.md`. Produção e deploy permanecem fora dessa fase.
 
 ### Fase 6 — Funcionalidades futuras
 

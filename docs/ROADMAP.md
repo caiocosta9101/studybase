@@ -39,8 +39,8 @@ O projeto deve evoluir de forma gradual, com etapas pequenas, seguras e bem docu
 | Fase 3C  | Planejamento da integração dos dados reais | Concluída    |
 | Fase 3D  | Leitura real do banco com Prisma           | Concluída    |
 | Fase 4   | Autenticação real                          | Concluída    |
-| Fase 5   | Refinamento com dados reais                | Pendente     |
-| Fase 6   | Funcionalidades futuras                    | Pendente     |
+| Fase 5   | Fluxos persistentes e refinamento           | Em andamento |
+| Fase 6   | Funcionalidades futuras                    | Futuro       |
 
 ---
 
@@ -218,7 +218,7 @@ Inclui:
 * cadastro;
 * login;
 * senha com hash;
-* sessão com JWT/cookie;
+* sessão stateless em cookie assinado;
 * proteção de rotas;
 * vínculo das anotações ao usuário autenticado.
 
@@ -298,23 +298,69 @@ Situação da Fase 4: concluída. A próxima evolução do projeto deve ser aval
 
 ---
 
-## Fase 5 — Refinamento com dados reais
+## Fase 5 — Fluxos persistentes e refinamento com dados reais
 
-Objetivo: melhorar a experiência da aplicação já funcionando com dados reais.
+Objetivo: substituir os fluxos locais ou mockados restantes por fluxos reais e persistentes aprovados, consolidar o CRUD do MVP e refinar busca, filtros, estados e apresentação sobre dados reais.
 
-Inclui:
+Status: em andamento.
 
-* persistência real de favoritos;
-* tags;
-* categorias;
-* busca melhorada;
-* filtros combinados;
-* loading states;
-* empty states;
-* mensagens de erro;
-* ajustes visuais.
+### Fase 5A — Criação real de anotações básicas
+
+Objetivo: implementar a criação persistente de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION`, com catálogo global real de áreas, categorias e tags, ownership da sessão e favorito inicial opcional.
+
+Status: concluída.
+
+Commit de implementação: `4761324 feat: implementa criacao real de anotacoes`.
+
+### Fase 5B — Edição real de anotações básicas
+
+Objetivo: permitir a edição persistente das notas básicas pertencentes ao usuário autenticado, mantendo o tipo e o slug estáveis.
 
 Status: pendente.
+
+### Fase 5C — Exclusão real e fechamento do CRUD básico
+
+Objetivo: permitir a exclusão permanente e confirmada das notas básicas próprias, garantindo consistência funcional imediata das leituras afetadas.
+
+Status: pendente.
+
+### Fase 5D — Favoritos persistentes
+
+Objetivo: substituir as ações rápidas locais de favorito por mutações persistentes e refletir o estado real nas telas relacionadas.
+
+Status: pendente.
+
+### Fase 5E — CRUD estruturado de `SNIPPET`
+
+Objetivo: implementar criação, edição e exclusão de snippets preservando seus dados estruturados.
+
+Pré-requisito: revisão e aprovação específica das regras funcionais mínimas de `SNIPPET` antes de qualquer planejamento de implementação.
+
+Status: pendente.
+
+### Fase 5F — CRUD estruturado de `COMPARISON`
+
+Objetivo: implementar criação, edição e exclusão de comparações com suas opções estruturadas.
+
+Pré-requisito: revisão e aprovação específica das regras funcionais mínimas de `COMPARISON` antes de qualquer planejamento de implementação.
+
+Status: pendente.
+
+### Fase 5G — Refinamento de busca e filtros
+
+Objetivo: aprimorar a busca e os filtros combinados depois que os fluxos persistentes principais estiverem consistentes.
+
+Status: pendente.
+
+### Fase 5H — Estados, consistência visual e fechamento funcional
+
+Objetivo: consolidar loading states, empty states, mensagens de erro, conteúdo e ajustes visuais alinhados aos fluxos reais.
+
+Status: pendente.
+
+Produção, banco de produção e deploy não fazem parte da Fase 5. Depois da conclusão da Fase 5H deverá ocorrer uma revisão separada de prontidão para produção/deploy, ainda sem nome ou numeração definidos.
+
+Próxima subfase: Fase 5B — Edição real de anotações básicas.
 
 ---
 

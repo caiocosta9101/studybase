@@ -185,6 +185,6 @@ A Fase 4B não causou esse comportamento e não alterou os componentes responsá
 
 ---
 
-## Próximo passo recomendado
+## Situação posterior
 
-Diagnosticar, planejar e aprovar a próxima subfase da Fase 4 antes de implementar código adicional. O roadmap atual não define nome ou escopo fechado para essa próxima subfase.
+A Fase 4C implementou a proteção server-side das rotas internas e o isolamento das leituras por usuário. A Fase 4D concluiu a autenticação prevista no roadmap com o cadastro público de usuário.

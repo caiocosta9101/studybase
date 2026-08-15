@@ -93,6 +93,6 @@ A conta inicial existente foi ativada com uma senha protegida por hash. As notas
 
 ---
 
-## Próximo passo recomendado
+## Situação posterior
 
-Diagnosticar, planejar e aprovar a Fase 4B antes de iniciar qualquer implementação de login, sessão ou proteção de dados.
+A Fase 4B implementou login, logout e sessão stateless em cookie assinado. As Fases 4C e 4D concluíram, respectivamente, a proteção e o isolamento das leituras e o cadastro de usuário.
