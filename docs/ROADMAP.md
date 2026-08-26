@@ -316,7 +316,19 @@ Commit de implementação: `4761324 feat: implementa criacao real de anotacoes`.
 
 Objetivo: permitir a edição persistente das notas básicas pertencentes ao usuário autenticado, mantendo o tipo e o slug estáveis.
 
-Status: pendente.
+Status: concluída.
+
+Foram entregues:
+
+* edição persistente de notas próprias `SIMPLE`, `GUIDE` e `ERROR_SOLUTION`;
+* rota protegida `/anotacoes/[id]/editar` com ownership obtido da sessão;
+* manutenção do tipo imutável e do slug estável;
+* edição de título, resumo, conteúdo, área, categoria, tags e favorito;
+* validações server-side do formulário e do catálogo global;
+* substituição atômica das tags junto com a atualização da nota;
+* revalidação das leituras afetadas após a persistência confirmada.
+
+Commit de implementação: `6f9496c feat: implementa edicao real de anotacoes`.
 
 ### Fase 5C — Exclusão real e fechamento do CRUD básico
 
@@ -360,7 +372,7 @@ Status: pendente.
 
 Produção, banco de produção e deploy não fazem parte da Fase 5. Depois da conclusão da Fase 5H deverá ocorrer uma revisão separada de prontidão para produção/deploy, ainda sem nome ou numeração definidos.
 
-Próxima subfase: Fase 5B — Edição real de anotações básicas.
+Próxima subfase: Fase 5C — Exclusão real e fechamento do CRUD básico.
 
 ---
 
