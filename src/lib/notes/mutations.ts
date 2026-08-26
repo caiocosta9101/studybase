@@ -1,10 +1,15 @@
 import "server-only";
 
 import { randomBytes } from "crypto";
-import { Prisma } from "@prisma/client";
+import { NoteType as PrismaNoteType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const maximumSlugAttempts = 5;
+const editableNoteTypes: PrismaNoteType[] = [
+  PrismaNoteType.SIMPLE,
+  PrismaNoteType.GUIDE,
+  PrismaNoteType.ERROR_SOLUTION
+];
 
 export type CreatableNoteType = "SIMPLE" | "GUIDE" | "ERROR_SOLUTION";
 
@@ -13,6 +18,18 @@ export type CreateBasicNoteInput = {
   summary: string | null;
   content: string;
   type: CreatableNoteType;
+  favorite: boolean;
+  areaId: string;
+  categoryId: string;
+  tagIds: string[];
+  userId: string;
+};
+
+export type UpdateBasicNoteInput = {
+  slug: string;
+  title: string;
+  summary: string | null;
+  content: string;
   favorite: boolean;
   areaId: string;
   categoryId: string;
@@ -36,6 +53,13 @@ export class NoteSlugGenerationError extends Error {
   constructor() {
     super("Não foi possível gerar um slug único para a anotação.");
     this.name = "NoteSlugGenerationError";
+  }
+}
+
+export class EditableNoteNotFoundError extends Error {
+  constructor() {
+    super("A anotação não está disponível para edição.");
+    this.name = "EditableNoteNotFoundError";
   }
 }
 
@@ -89,39 +113,98 @@ export async function createBasicNote(input: CreateBasicNoteInput) {
   throw new NoteSlugGenerationError();
 }
 
+export async function updateBasicNote(input: UpdateBasicNoteInput) {
+  const tagIds = Array.from(new Set(input.tagIds));
+
+  return prisma.$transaction(async (transaction) => {
+    const note = await transaction.note.findFirst({
+      where: {
+        slug: input.slug,
+        userId: input.userId,
+        type: {
+          in: editableNoteTypes
+        }
+      },
+      select: {
+        id: true,
+        slug: true
+      }
+    });
+
+    if (!note) {
+      throw new EditableNoteNotFoundError();
+    }
+
+    await validateCatalogSelections(transaction, input.areaId, input.categoryId, tagIds);
+
+    const updatedNote = await transaction.note.update({
+      where: {
+        id: note.id
+      },
+      data: {
+        title: input.title,
+        summary: input.summary,
+        content: input.content,
+        favorite: input.favorite,
+        areaId: input.areaId,
+        categoryId: input.categoryId
+      },
+      select: {
+        slug: true
+      }
+    });
+
+    await transaction.noteTag.deleteMany({
+      where: {
+        noteId: note.id
+      }
+    });
+
+    if (tagIds.length > 0) {
+      await transaction.noteTag.createMany({
+        data: tagIds.map((tagId) => ({
+          noteId: note.id,
+          tagId
+        }))
+      });
+    }
+
+    return updatedNote;
+  });
+}
+
 async function validateCatalogSelections(
   transaction: Prisma.TransactionClient,
   areaId: string,
   categoryId: string,
   tagIds: string[]
 ) {
-  const [area, category, tagCount] = await Promise.all([
-    transaction.area.findUnique({
-      where: {
-        id: areaId
-      },
-      select: {
-        id: true
-      }
-    }),
-    transaction.category.findUnique({
-      where: {
-        id: categoryId
-      },
-      select: {
-        areaId: true
-      }
-    }),
+  const area = await transaction.area.findUnique({
+    where: {
+      id: areaId
+    },
+    select: {
+      id: true
+    }
+  });
+  const category = await transaction.category.findUnique({
+    where: {
+      id: categoryId
+    },
+    select: {
+      areaId: true
+    }
+  });
+  const tagCount =
     tagIds.length > 0
-      ? transaction.tag.count({
+      ? await transaction.tag.count({
           where: {
             id: {
               in: tagIds
             }
           }
         })
-      : Promise.resolve(0)
-  ]);
+      : 0;
 
   const fieldErrors: NoteCatalogFieldErrors = {};
 

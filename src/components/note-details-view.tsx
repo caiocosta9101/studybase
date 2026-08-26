@@ -9,9 +9,12 @@ type NoteDetailsViewProps = {
   note: Note;
 };
 
+const editableNoteTypes = new Set<Note["type"]>(["SIMPLE", "GUIDE", "ERROR_SOLUTION"]);
+
 export function NoteDetailsView({ note }: NoteDetailsViewProps) {
   const [isFavorite, setIsFavorite] = useState(note.isFavorite);
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
+  const canEdit = editableNoteTypes.has(note.type);
 
   function toggleFavorite() {
     setIsFavorite((currentValue) => {
@@ -33,17 +36,27 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
         <Link href="/anotacoes" className="text-sm font-bold text-sky-700 hover:text-sky-900">
           Voltar para anotações
         </Link>
-        <button
-          type="button"
-          onClick={toggleFavorite}
-          className={
-            isFavorite
-              ? "w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
-              : "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
-          }
-        >
-          {isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {canEdit ? (
+            <Link
+              href={`/anotacoes/${encodeURIComponent(note.id)}/editar`}
+              className="w-fit rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
+            >
+              Editar
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            onClick={toggleFavorite}
+            className={
+              isFavorite
+                ? "w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
+                : "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+            }
+          >
+            {isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
+          </button>
+        </div>
       </div>
 
       {favoriteFeedback ? (

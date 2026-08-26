@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Prisma } from "@prisma/client";
+import { NoteType as PrismaNoteType, Prisma } from "@prisma/client";
 import { noteTypeConfig } from "@/config/note-type-config";
 import { prisma } from "@/lib/prisma";
 import { mapNoteDetailsToUiNote, mapNoteListItemToUiNote } from "./mappers";
@@ -91,6 +91,28 @@ const noteDetailsSelect = {
   }
 } satisfies Prisma.NoteSelect;
 
+const editableNoteSelect = {
+  slug: true,
+  title: true,
+  summary: true,
+  content: true,
+  type: true,
+  favorite: true,
+  areaId: true,
+  categoryId: true,
+  noteTags: {
+    select: {
+      tagId: true
+    }
+  }
+} satisfies Prisma.NoteSelect;
+
+const editableNoteTypes: PrismaNoteType[] = [
+  PrismaNoteType.SIMPLE,
+  PrismaNoteType.GUIDE,
+  PrismaNoteType.ERROR_SOLUTION
+];
+
 export type NoteListItem = Prisma.NoteGetPayload<{
   select: typeof noteListItemSelect;
 }>;
@@ -98,6 +120,14 @@ export type NoteListItem = Prisma.NoteGetPayload<{
 export type NoteDetailsItem = Prisma.NoteGetPayload<{
   select: typeof noteDetailsSelect;
 }>;
+
+type EditableNoteItem = Prisma.NoteGetPayload<{
+  select: typeof editableNoteSelect;
+}>;
+
+export type EditableNoteData = Omit<EditableNoteItem, "noteTags"> & {
+  tagIds: string[];
+};
 
 export type DashboardData = {
   totalNotes: number;
@@ -187,6 +217,30 @@ export async function getNoteCreationCatalog(): Promise<NoteCreationCatalog> {
   return {
     areas,
     tags
+  };
+}
+
+export async function getEditableNoteBySlug(slug: string, userId: string): Promise<EditableNoteData | null> {
+  const note = await prisma.note.findFirst({
+    where: {
+      slug,
+      userId,
+      type: {
+        in: editableNoteTypes
+      }
+    },
+    select: editableNoteSelect
+  });
+
+  if (!note) {
+    return null;
+  }
+
+  const { noteTags, ...editableNote } = note;
+
+  return {
+    ...editableNote,
+    tagIds: noteTags.map((noteTag) => noteTag.tagId)
   };
 }
 
