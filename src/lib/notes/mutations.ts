@@ -5,7 +5,7 @@ import { NoteType as PrismaNoteType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const maximumSlugAttempts = 5;
-const editableNoteTypes: PrismaNoteType[] = [
+const basicNoteTypes: PrismaNoteType[] = [
   PrismaNoteType.SIMPLE,
   PrismaNoteType.GUIDE,
   PrismaNoteType.ERROR_SOLUTION
@@ -34,6 +34,11 @@ export type UpdateBasicNoteInput = {
   areaId: string;
   categoryId: string;
   tagIds: string[];
+  userId: string;
+};
+
+export type DeleteBasicNoteInput = {
+  slug: string;
   userId: string;
 };
 
@@ -122,7 +127,7 @@ export async function updateBasicNote(input: UpdateBasicNoteInput) {
         slug: input.slug,
         userId: input.userId,
         type: {
-          in: editableNoteTypes
+          in: basicNoteTypes
         }
       },
       select: {
@@ -170,6 +175,24 @@ export async function updateBasicNote(input: UpdateBasicNoteInput) {
     }
 
     return updatedNote;
+  });
+}
+
+export async function deleteBasicNote(input: DeleteBasicNoteInput) {
+  return prisma.note.deleteMany({
+    where: {
+      slug: input.slug,
+      userId: input.userId,
+      type: {
+        in: basicNoteTypes
+      },
+      comparison: {
+        is: null
+      },
+      snippets: {
+        none: {}
+      }
+    }
   });
 }
 

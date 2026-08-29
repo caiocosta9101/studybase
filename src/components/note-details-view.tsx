@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { deleteNoteAction } from "@/app/anotacoes/[id]/actions";
 import { NoteTypeBadge } from "@/components/note-type-badge";
 import { Note } from "@/types/note";
 
@@ -9,12 +11,17 @@ type NoteDetailsViewProps = {
   note: Note;
 };
 
-const editableNoteTypes = new Set<Note["type"]>(["SIMPLE", "GUIDE", "ERROR_SOLUTION"]);
+const basicNoteTypes = new Set<Note["type"]>(["SIMPLE", "GUIDE", "ERROR_SOLUTION"]);
 
 export function NoteDetailsView({ note }: NoteDetailsViewProps) {
+  const router = useRouter();
+  const deletionInProgress = useRef(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite);
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
-  const canEdit = editableNoteTypes.has(note.type);
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const canManage = basicNoteTypes.has(note.type);
 
   function toggleFavorite() {
     setIsFavorite((currentValue) => {
@@ -30,6 +37,45 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
     });
   }
 
+  function openDeleteConfirmation() {
+    setDeleteError(null);
+    setIsDeleteConfirmationOpen(true);
+  }
+
+  function cancelDelete() {
+    if (isDeleting) {
+      return;
+    }
+
+    setDeleteError(null);
+    setIsDeleteConfirmationOpen(false);
+  }
+
+  async function confirmDelete() {
+    if (deletionInProgress.current) {
+      return;
+    }
+
+    deletionInProgress.current = true;
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    const result = await deleteNoteAction(note.id).catch((error) => {
+      deletionInProgress.current = false;
+      setIsDeleting(false);
+      throw error;
+    });
+
+    if (result.success) {
+      router.replace("/anotacoes?status=note_deleted");
+      return;
+    }
+
+    setDeleteError(result.message);
+    deletionInProgress.current = false;
+    setIsDeleting(false);
+  }
+
   return (
     <article className="mx-auto max-w-6xl space-y-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -37,27 +83,82 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
           Voltar para anotações
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          {canEdit ? (
+          {canManage ? (
             <Link
               href={`/anotacoes/${encodeURIComponent(note.id)}/editar`}
-              className="w-fit rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
+              aria-disabled={isDeleting}
+              className={`w-fit rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100 ${
+                isDeleting ? "pointer-events-none opacity-60" : ""
+              }`}
             >
               Editar
             </Link>
           ) : null}
+          {canManage ? (
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={openDeleteConfirmation}
+              className="w-fit rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Excluir
+            </button>
+          ) : null}
           <button
             type="button"
+            disabled={isDeleting}
             onClick={toggleFavorite}
             className={
               isFavorite
-                ? "w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
-                : "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                ? "w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                : "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             }
           >
             {isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
           </button>
         </div>
       </div>
+
+      {canManage && isDeleteConfirmationOpen ? (
+        <section
+          aria-busy={isDeleting}
+          aria-labelledby="delete-note-title"
+          aria-describedby="delete-note-description"
+          className="rounded-lg border border-rose-200 bg-rose-50 p-5 shadow-soft"
+        >
+          <h2 id="delete-note-title" className="text-base font-bold text-rose-950">
+            Excluir esta anotação?
+          </h2>
+          <p id="delete-note-description" className="mt-2 text-sm leading-6 text-rose-900">
+            A exclusão de “{note.title}” é permanente e não poderá ser desfeita.
+          </p>
+
+          {deleteError ? (
+            <p role="alert" className="mt-3 text-sm font-semibold text-rose-800">
+              {deleteError}
+            </p>
+          ) : null}
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={cancelDelete}
+              className="h-10 rounded-lg border border-rose-200 bg-white px-4 text-sm font-bold text-rose-800 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={confirmDelete}
+              className="h-10 rounded-lg bg-rose-700 px-4 text-sm font-bold text-white transition hover:bg-rose-800 disabled:cursor-not-allowed disabled:bg-rose-400"
+            >
+              {isDeleting ? "Excluindo…" : "Excluir permanentemente"}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       {favoriteFeedback ? (
         <div className="flex flex-col gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
