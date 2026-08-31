@@ -334,7 +334,18 @@ Commit de implementação: `6f9496c feat: implementa edicao real de anotacoes`.
 
 Objetivo: permitir a exclusão permanente e confirmada das notas básicas próprias, garantindo consistência funcional imediata das leituras afetadas.
 
-Status: pendente.
+Status: concluída.
+
+Foram entregues:
+
+* exclusão permanente de notas próprias `SIMPLE`, `GUIDE` e `ERROR_SOLUTION`;
+* autorização, whitelist de tipos e proteção de dados estruturados na mesma operação `deleteMany`;
+* confirmação inline e bloqueio de submissão duplicada;
+* `404` uniforme para alvos não elegíveis;
+* navegação de sucesso com substituição do histórico;
+* fechamento do CRUD persistente básico dos três tipos atendidos pelas Fases 5A–5C.
+
+Commit de implementação: `d9acb90 feat: implementa exclusao real de anotacoes`.
 
 ### Fase 5D — Favoritos persistentes
 
@@ -372,7 +383,7 @@ Status: pendente.
 
 Produção, banco de produção e deploy não fazem parte da Fase 5. Depois da conclusão da Fase 5H deverá ocorrer uma revisão separada de prontidão para produção/deploy, ainda sem nome ou numeração definidos.
 
-Próxima subfase: Fase 5C — Exclusão real e fechamento do CRUD básico.
+Próxima subfase: Fase 5D — Favoritos persistentes.
 
 ---
 

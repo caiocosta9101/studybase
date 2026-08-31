@@ -1,12 +1,12 @@
-Última subfase concluída: Fase 5B — Edição real de anotações básicas
+Última subfase concluída: Fase 5C — Exclusão real e fechamento do CRUD básico
 Fase atual: Fase 5 — Fluxos persistentes e refinamento com dados reais, em andamento
-Próxima subfase: Fase 5C — Exclusão real e fechamento do CRUD básico
+Próxima subfase: Fase 5D — Favoritos persistentes
 
 Banco local: studybase_dev
 Migration: aplicada
 Seed: executado
 Prisma Studio: validado
-Build: passou nas validações técnicas da Fase 5B
+Build: passou nas validações técnicas da Fase 5C
 
 Últimos marcos:
 - Fase 3A: Prisma e schema inicial concluídos.
@@ -33,6 +33,7 @@ Build: passou nas validações técnicas da Fase 5B
 - Fase 5: diagnóstico, regras funcionais e divisão 5A–5H aprovados.
 - Fase 5A: criação real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada.
 - Fase 5B: edição real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada.
+- Fase 5C: exclusão real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada, fechando seu CRUD persistente básico.
 - Commit de implementação da Fase 4A: `99e1ebd feat: prepara credencial da conta inicial`.
 - Commit de implementação da Fase 4B: `56158fb feat: implementa login logout e sessao`.
 - Commit de implementação da Fase 4C: `9bc1a37 feat: protege rotas e isola leituras por usuario`.
@@ -40,6 +41,7 @@ Build: passou nas validações técnicas da Fase 5B
 - Commit de documentação e fechamento da Fase 4D: `2007f23 docs: registra conclusao da fase 4d`.
 - Commit de implementação da Fase 5A: `4761324 feat: implementa criacao real de anotacoes`.
 - Commit de implementação da Fase 5B: `6f9496c feat: implementa edicao real de anotacoes`.
+- Commit de implementação da Fase 5C: `d9acb90 feat: implementa exclusao real de anotacoes`.
 
 Entregas concluídas da Fase 3D:
 - `/` busca métricas e notas recentes reais do PostgreSQL usando Prisma.
@@ -148,6 +150,23 @@ Entregas concluídas da Fase 5B:
 - Os dados sintéticos usados na regressão foram removidos ao final.
 - Não houve alteração de schema, migration, seed, dependência ou variável de ambiente.
 
+Entregas concluídas da Fase 5C:
+- A exclusão permanente está disponível somente no detalhe de notas próprias `SIMPLE`, `GUIDE` e `ERROR_SOLUTION`.
+- O fluxo usa confirmação inline, cancelamento, estado `Excluindo…` e proteção imediata contra submissão duplicada.
+- O `userId` vem exclusivamente da sessão; o slug é somente o localizador e o tipo autorizado é o valor persistido.
+- `prisma.note.deleteMany` combina slug, ownership, whitelist de tipos e ausência de `Snippet` e `Comparison` na operação decisiva.
+- `SNIPPET`, `COMPARISON` e notas básicas com dados estruturados incompatíveis não são elegíveis para exclusão.
+- Alvo inexistente, de outro usuário, estruturado ou removido entre abertura e envio segue o mesmo comportamento de `404`.
+- `NoteTag` é removida pelo cascade existente; área, categoria, tags globais e usuário são preservados.
+- A operação normal não usa transação Prisma ou limpeza manual desnecessária.
+- O sucesso usa `router.replace("/anotacoes?status=note_deleted")`; o banner da query string é somente cosmético.
+- A única revalidação explícita é `revalidatePath("/anotacoes")`; as demais leituras dinâmicas refletiram a exclusão nos testes.
+- Detalhe e edição da nota removida retornam `404`, inclusive depois de reload e navegação pelo histórico.
+- A rejeição da Server Action libera o estado local de submissão e relança o erro original.
+- Criação, leitura e edição das notas básicas, além da leitura de `SNIPPET` e `COMPARISON`, permaneceram funcionando.
+- `npm.cmd run type-check`, `npm.cmd run build`, `git diff --check` e os testes manuais no navegador passaram.
+- Não houve alteração de schema, migration, seed, dependência ou variável de ambiente.
+
 Estado atual da Fase 5:
 - A Fase 5 está em andamento e sua divisão em 5A–5H foi aprovada.
 - Fase 5A — Criação real de anotações básicas: concluída e registrada no commit `4761324 feat: implementa criacao real de anotacoes`.
@@ -156,7 +175,8 @@ Estado atual da Fase 5:
 - O catálogo de criação consulta áreas, categorias e tags globais sem depender das notas já pertencentes ao usuário.
 - O fluxo mockado de criação, o `NotesProvider` e os mocks sem consumidores foram removidos na Fase 5A.
 - Fase 5B — Edição real de anotações básicas: concluída e registrada no commit `6f9496c feat: implementa edicao real de anotacoes`.
-- Fase 5C — Exclusão real e fechamento do CRUD básico: pendente.
+- Fase 5C — Exclusão real e fechamento do CRUD básico: concluída e registrada no commit `d9acb90 feat: implementa exclusao real de anotacoes`.
+- O CRUD persistente básico de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` está fechado pelas Fases 5A, 5B e 5C, com leitura real já existente.
 - Fase 5D — Favoritos persistentes nas ações rápidas: pendente.
 - Fase 5E — CRUD estruturado de `SNIPPET`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
 - Fase 5F — CRUD estruturado de `COMPARISON`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
@@ -165,7 +185,7 @@ Estado atual da Fase 5:
 - Produção, banco de produção e deploy permanecem fora da Fase 5. Depois da 5H haverá uma revisão separada de prontidão, ainda sem nome ou numeração.
 
 Próximo passo recomendado:
-- Diagnosticar e planejar a Fase 5C antes de iniciar a exclusão real e o fechamento do CRUD básico.
+- Diagnosticar e planejar a Fase 5D antes de iniciar a persistência das ações rápidas de favorito.
 
 Estado consolidado das Fases 3 e 4:
 - As Fases 3A, 3B, 3C e 3D estão concluídas.
@@ -178,7 +198,7 @@ Estado consolidado das Fases 3 e 4:
 - O cadastro público está implementado, com autenticação automática e validação de uma conta nova com zero dados.
 - Todos os objetivos explicitamente definidos pelo roadmap para a Fase 4 estão concluídos.
 - Recuperação ou troca de senha, rate limiting, sessão persistida no banco e revogação individual das sessões stateless não estão implementados, mas não são requisitos definidos pelo roadmap para concluir a Fase 4.
-- O CRUD real básico já possui criação e edição persistentes pelas Fases 5A e 5B; a exclusão permanece pendente para a Fase 5C.
+- O CRUD real básico de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` possui criação, leitura, edição e exclusão persistentes concluídas pelas Fases 5A, 5B e 5C.
 - O favorito inicial já é persistido na criação da 5A, mas as ações rápidas de favorito continuam pendentes para a Fase 5D.
 
 Riscos e pendências conhecidos:
