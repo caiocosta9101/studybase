@@ -351,7 +351,18 @@ Commit de implementação: `d9acb90 feat: implementa exclusao real de anotacoes`
 
 Objetivo: substituir as ações rápidas locais de favorito por mutações persistentes e refletir o estado real nas telas relacionadas.
 
-Status: pendente.
+Status: concluída.
+
+Foram entregues:
+
+* ações rápidas persistentes de favorito em `/`, `/dashboard`, `/anotacoes`, `/favoritos` e `/anotacoes/[id]`;
+* mutation autenticada com ownership obtido exclusivamente da sessão;
+* suporte aos cinco tipos de anotação existentes;
+* preservação de `updatedAt` nas ações rápidas;
+* pending por slug, bloqueio de submissão duplicada e atualização visual somente após confirmação;
+* revalidação das leituras relacionadas depois da persistência.
+
+Commit de implementação: `f228a4f feat: implementa favoritos persistentes`.
 
 ### Fase 5E — CRUD estruturado de `SNIPPET`
 
@@ -383,7 +394,7 @@ Status: pendente.
 
 Produção, banco de produção e deploy não fazem parte da Fase 5. Depois da conclusão da Fase 5H deverá ocorrer uma revisão separada de prontidão para produção/deploy, ainda sem nome ou numeração definidos.
 
-Próxima subfase: Fase 5D — Favoritos persistentes.
+Próxima subfase: Fase 5E — CRUD estruturado de `SNIPPET`, condicionada à revisão e aprovação específica de suas regras funcionais mínimas.
 
 ---
 

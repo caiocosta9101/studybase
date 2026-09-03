@@ -1,12 +1,12 @@
-Última subfase concluída: Fase 5C — Exclusão real e fechamento do CRUD básico
+Última subfase concluída: Fase 5D — Favoritos persistentes
 Fase atual: Fase 5 — Fluxos persistentes e refinamento com dados reais, em andamento
-Próxima subfase: Fase 5D — Favoritos persistentes
+Próxima subfase: Fase 5E — CRUD estruturado de `SNIPPET`
 
 Banco local: studybase_dev
 Migration: aplicada
 Seed: executado
 Prisma Studio: validado
-Build: passou nas validações técnicas da Fase 5C
+Build: passou nas validações técnicas da Fase 5D
 
 Últimos marcos:
 - Fase 3A: Prisma e schema inicial concluídos.
@@ -34,6 +34,7 @@ Build: passou nas validações técnicas da Fase 5C
 - Fase 5A: criação real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada.
 - Fase 5B: edição real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada.
 - Fase 5C: exclusão real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada, fechando seu CRUD persistente básico.
+- Fase 5D: ações rápidas de favorito persistentes concluídas e validadas nos cinco tipos de anotação.
 - Commit de implementação da Fase 4A: `99e1ebd feat: prepara credencial da conta inicial`.
 - Commit de implementação da Fase 4B: `56158fb feat: implementa login logout e sessao`.
 - Commit de implementação da Fase 4C: `9bc1a37 feat: protege rotas e isola leituras por usuario`.
@@ -42,6 +43,7 @@ Build: passou nas validações técnicas da Fase 5C
 - Commit de implementação da Fase 5A: `4761324 feat: implementa criacao real de anotacoes`.
 - Commit de implementação da Fase 5B: `6f9496c feat: implementa edicao real de anotacoes`.
 - Commit de implementação da Fase 5C: `d9acb90 feat: implementa exclusao real de anotacoes`.
+- Commit de implementação da Fase 5D: `f228a4f feat: implementa favoritos persistentes`.
 
 Entregas concluídas da Fase 3D:
 - `/` busca métricas e notas recentes reais do PostgreSQL usando Prisma.
@@ -49,7 +51,7 @@ Entregas concluídas da Fase 3D:
 - `/anotacoes/[id]` busca detalhes reais por `slug`.
 - `/dashboard` busca métricas, favoritos recentes, áreas e distribuição por tipo diretamente do PostgreSQL.
 - `/favoritos` busca notas favoritas reais diretamente do PostgreSQL.
-- A remoção de favoritos em `/favoritos` continua somente visual e local, sem escrita no banco.
+- Na Fase 3D, a remoção de favoritos em `/favoritos` ainda era somente visual e local; essa lacuna foi fechada posteriormente pela Fase 5D.
 - `/areas` busca áreas reais com nome, descrição e quantidade de notas.
 - Os links de área abrem `/anotacoes?area=<slug>` com o filtro inicial aplicado.
 - A resolução do slug acontece no servidor; os demais filtros continuam locais.
@@ -60,7 +62,7 @@ Entregas concluídas da Fase 3D:
 - As consultas de leitura estão centralizadas em `src/lib/notes/queries.ts`.
 - Não houve escrita no banco durante a Fase 3D.
 - Busca, filtros e demais interações visuais continuam locais e sem escrita no banco.
-- Favoritos continuam apenas visuais e locais, sem persistência.
+- Na Fase 3D, favoritos ainda eram apenas visuais e locais; as ações rápidas passaram a ser persistentes na Fase 5D.
 - `/anotacoes/nova` continua com criação simulada e local usando os mocks preservados.
 - Build passou via Git Bash.
 - Testes visuais passaram.
@@ -138,7 +140,7 @@ Entregas concluídas da Fase 5B:
 - A seleção enviada substitui integralmente o conjunto anterior de tags.
 - A atualização de `Note` e a substituição de `NoteTag` ocorrem atomicamente na mesma transação Prisma.
 - O favorito é persistido pelo formulário de edição.
-- As ações rápidas de favorito no detalhe e nas demais telas continuam locais até a Fase 5D.
+- As ações rápidas de favorito no detalhe e nas demais telas permaneceram locais nesta etapa e foram tornadas persistentes posteriormente pela Fase 5D.
 - `updatedAt` avança nos salvamentos, inclusive quando a mudança efetiva é somente no conjunto de tags.
 - Depois da persistência são revalidados `/`, `/dashboard`, `/anotacoes`, o detalhe concreto, `/areas`, `/tags` e `/favoritos`.
 - O sucesso retorna ao detalhe usando o mesmo slug; o cancelamento retorna sem persistir alterações.
@@ -167,6 +169,20 @@ Entregas concluídas da Fase 5C:
 - `npm.cmd run type-check`, `npm.cmd run build`, `git diff --check` e os testes manuais no navegador passaram.
 - Não houve alteração de schema, migration, seed, dependência ou variável de ambiente.
 
+Entregas concluídas da Fase 5D:
+- As ações rápidas de favorito em `/`, `/dashboard`, `/anotacoes`, `/favoritos` e `/anotacoes/[id]` persistem o estado real no PostgreSQL.
+- `SIMPLE`, `GUIDE`, `ERROR_SOLUTION`, `SNIPPET` e `COMPARISON` são contemplados sem iniciar o CRUD estruturado dos dois últimos tipos.
+- O cliente envia somente slug e estado desejado; o `userId` vem exclusivamente da sessão autenticada e participa da escrita.
+- Nota inexistente e nota fora do ownership recebem tratamento indistinguível.
+- A atualização PostgreSQL é estática, parametrizada e altera exclusivamente `favorite`, preservando `updatedAt`.
+- A mutation retorna o valor realmente persistido e a interface só muda depois da confirmação do servidor.
+- O pending por slug bloqueia double submit da mesma nota sem impedir requisições simultâneas para notas diferentes.
+- O dashboard usa `favoriteNotes` e `totalFavorites` diretamente dos dados server-side; a revalidação recompõe corretamente o limite de três favoritos.
+- Foram revalidados `/`, `/dashboard`, `/anotacoes`, `/favoritos`, o detalhe concreto e a edição concreta; `/areas` e `/tags` não receberam revalidação desnecessária.
+- Reload, cinco tipos, ownership, sessão ausente, preservação de `updatedAt`, dados estruturados, home, dashboard, listagem, favoritos, detalhe, edição e regressões 5A–5C foram validados.
+- `npm.cmd run type-check`, `npm.cmd run build` e `git diff --check` passaram.
+- Não houve alteração de schema, migration, seed, dependência ou variável de ambiente; o seed permaneceu intacto e não foi executado.
+
 Estado atual da Fase 5:
 - A Fase 5 está em andamento e sua divisão em 5A–5H foi aprovada.
 - Fase 5A — Criação real de anotações básicas: concluída e registrada no commit `4761324 feat: implementa criacao real de anotacoes`.
@@ -177,7 +193,8 @@ Estado atual da Fase 5:
 - Fase 5B — Edição real de anotações básicas: concluída e registrada no commit `6f9496c feat: implementa edicao real de anotacoes`.
 - Fase 5C — Exclusão real e fechamento do CRUD básico: concluída e registrada no commit `d9acb90 feat: implementa exclusao real de anotacoes`.
 - O CRUD persistente básico de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` está fechado pelas Fases 5A, 5B e 5C, com leitura real já existente.
-- Fase 5D — Favoritos persistentes nas ações rápidas: pendente.
+- Fase 5D — Favoritos persistentes nas ações rápidas: concluída funcionalmente e registrada no commit `f228a4f feat: implementa favoritos persistentes`; ainda falta o commit documental e a publicação dos dois commits.
+- As ações rápidas de favorito são persistentes nos cinco tipos, preservam `updatedAt` e mantêm ownership obtido da sessão.
 - Fase 5E — CRUD estruturado de `SNIPPET`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
 - Fase 5F — CRUD estruturado de `COMPARISON`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
 - Fase 5G — Refinamento de busca e filtros: pendente.
@@ -185,7 +202,7 @@ Estado atual da Fase 5:
 - Produção, banco de produção e deploy permanecem fora da Fase 5. Depois da 5H haverá uma revisão separada de prontidão, ainda sem nome ou numeração.
 
 Próximo passo recomendado:
-- Diagnosticar e planejar a Fase 5D antes de iniciar a persistência das ações rápidas de favorito.
+- Concluir o commit documental e publicar os commits funcional e documental da Fase 5D; depois, revisar e aprovar as regras funcionais mínimas da Fase 5E antes de planejá-la ou implementá-la.
 
 Estado consolidado das Fases 3 e 4:
 - As Fases 3A, 3B, 3C e 3D estão concluídas.
@@ -199,7 +216,7 @@ Estado consolidado das Fases 3 e 4:
 - Todos os objetivos explicitamente definidos pelo roadmap para a Fase 4 estão concluídos.
 - Recuperação ou troca de senha, rate limiting, sessão persistida no banco e revogação individual das sessões stateless não estão implementados, mas não são requisitos definidos pelo roadmap para concluir a Fase 4.
 - O CRUD real básico de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` possui criação, leitura, edição e exclusão persistentes concluídas pelas Fases 5A, 5B e 5C.
-- O favorito inicial já é persistido na criação da 5A, mas as ações rápidas de favorito continuam pendentes para a Fase 5D.
+- O favorito inicial é persistido na criação da 5A, o formulário completo o persiste na edição da 5B e as ações rápidas são persistentes desde a Fase 5D.
 
 Riscos e pendências conhecidos:
 - `prisma/seed.ts` define `passwordHash: null` também no bloco `update` do usuário inicial.
@@ -207,7 +224,7 @@ Riscos e pendências conhecidos:
 - Recuperação ou troca de senha, verificação de e-mail, OAuth, roles, rate limiting, sessão persistida no banco e revogação individual de sessões permanecem adiados.
 - A conta sintética da validação da Fase 4D permanece no banco local por decisão desta etapa.
 - O rodapé dos cards de "Anotações favoritas" pode comprimir área e data em determinadas larguras.
-- O problema dos cards é anterior à Fase 4B; `dashboard` e `note-card` não foram alterados e a correção deve ser tratada separadamente.
+- O problema dos cards é anterior à Fase 4B e não foi tratado pela Fase 5D; embora `dashboard` e `note-card` tenham sido alterados para persistência de favoritos, a correção visual deve ser tratada separadamente.
 
 Fora do escopo da Fase 4B:
 - Proteção de rotas e middleware.
