@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteNoteAction } from "@/app/anotacoes/[id]/actions";
 import { NoteTypeBadge } from "@/components/note-type-badge";
+import { useNoteFavoriteMutation } from "@/hooks/use-note-favorite-mutation";
 import { Note } from "@/types/note";
 
 type NoteDetailsViewProps = {
@@ -17,24 +18,29 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
   const router = useRouter();
   const deletionInProgress = useRef(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite);
-  const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
+  const [favoriteError, setFavoriteError] = useState<string | null>(null);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { setFavorite, isFavoritePending } = useNoteFavoriteMutation();
   const canManage = basicNoteTypes.has(note.type);
+  const favoritePending = isFavoritePending(note.id);
 
-  function toggleFavorite() {
-    setIsFavorite((currentValue) => {
-      const nextValue = !currentValue;
+  async function changeFavorite() {
+    setFavoriteError(null);
 
-      setFavoriteFeedback(
-        nextValue
-          ? `"${note.title}" foi adicionada aos favoritos nesta visualização.`
-          : `"${note.title}" foi removida dos favoritos nesta visualização.`
-      );
+    const result = await setFavorite(note.id, !isFavorite);
 
-      return nextValue;
-    });
+    if (!result) {
+      return;
+    }
+
+    if (!result.success) {
+      setFavoriteError(result.message);
+      return;
+    }
+
+    setIsFavorite(result.favorite);
   }
 
   function openDeleteConfirmation() {
@@ -106,15 +112,16 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
           ) : null}
           <button
             type="button"
-            disabled={isDeleting}
-            onClick={toggleFavorite}
+            disabled={isDeleting || favoritePending}
+            onClick={changeFavorite}
             className={
               isFavorite
                 ? "w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                 : "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             }
+            aria-busy={favoritePending}
           >
-            {isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
+            {favoritePending ? "Salvando…" : isFavorite ? "Remover dos favoritos" : "Marcar como favorito"}
           </button>
         </div>
       </div>
@@ -160,17 +167,10 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
         </section>
       ) : null}
 
-      {favoriteFeedback ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-sky-800">{favoriteFeedback}</p>
-          <button
-            type="button"
-            onClick={() => setFavoriteFeedback(null)}
-            className="w-fit rounded-lg border border-sky-200 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
-          >
-            Fechar
-          </button>
-        </div>
+      {favoriteError ? (
+        <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+          {favoriteError}
+        </p>
       ) : null}
 
       <header className="rounded-lg border border-slate-200 bg-white p-6 shadow-soft">

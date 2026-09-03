@@ -42,6 +42,16 @@ export type DeleteBasicNoteInput = {
   userId: string;
 };
 
+export type SetNoteFavoriteInput = {
+  slug: string;
+  favorite: boolean;
+  userId: string;
+};
+
+type UpdatedFavoriteRow = {
+  favorite: boolean;
+};
+
 export type NoteCatalogFieldErrors = Partial<Record<"area" | "category" | "tags", string>>;
 
 export class InvalidNoteCatalogError extends Error {
@@ -194,6 +204,18 @@ export async function deleteBasicNote(input: DeleteBasicNoteInput) {
       }
     }
   });
+}
+
+export async function setNoteFavorite(input: SetNoteFavoriteInput) {
+  const updatedNotes = await prisma.$queryRaw<UpdatedFavoriteRow[]>`
+    UPDATE "Note"
+    SET "favorite" = ${input.favorite}
+    WHERE "slug" = ${input.slug}
+      AND "userId" = ${input.userId}
+    RETURNING "favorite"
+  `;
+
+  return updatedNotes[0] ?? null;
 }
 
 async function validateCatalogSelections(

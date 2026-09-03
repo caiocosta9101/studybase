@@ -7,10 +7,11 @@ import { NoteTypeBadge } from "./note-type-badge";
 type NoteCardProps = {
   note: Note;
   compact?: boolean;
-  onToggleFavorite?: (id: string) => void;
+  onFavoriteChange?: (slug: string, favorite: boolean) => void | Promise<void>;
+  isFavoritePending?: boolean;
 };
 
-export function NoteCard({ note, compact = false, onToggleFavorite }: NoteCardProps) {
+export function NoteCard({ note, compact = false, onFavoriteChange, isFavoritePending = false }: NoteCardProps) {
   return (
     <article className="group flex h-full flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg">
       <div className="flex items-start justify-between gap-3">
@@ -23,18 +24,26 @@ export function NoteCard({ note, compact = false, onToggleFavorite }: NoteCardPr
           ) : null}
         </div>
 
-        {onToggleFavorite ? (
+        {onFavoriteChange ? (
           <button
             type="button"
-            onClick={() => onToggleFavorite(note.id)}
+            disabled={isFavoritePending}
+            onClick={() => onFavoriteChange(note.id, !note.isFavorite)}
             className={
               note.isFavorite
-                ? "rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
-                : "rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                ? "rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                : "rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             }
-            aria-label={note.isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            aria-busy={isFavoritePending}
+            aria-label={
+              isFavoritePending
+                ? "Salvando favorito"
+                : note.isFavorite
+                  ? "Remover dos favoritos"
+                  : "Adicionar aos favoritos"
+            }
           >
-            {note.isFavorite ? "Remover" : "Favoritar"}
+            {isFavoritePending ? "Salvando…" : note.isFavorite ? "Remover" : "Favoritar"}
           </button>
         ) : null}
       </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MetricCard } from "@/components/metric-card";
 import { NoteCard } from "@/components/note-card";
 import { PageHeader } from "@/components/page-header";
+import { useNoteFavoriteMutation } from "@/hooks/use-note-favorite-mutation";
 import type { HomeData } from "@/lib/notes/queries";
 
 type HomeClientProps = {
@@ -13,20 +14,28 @@ type HomeClientProps = {
 
 export function HomeClient({ data }: HomeClientProps) {
   const [recentNotes, setRecentNotes] = useState(data.recentNotes);
+  const [favoriteError, setFavoriteError] = useState<string | null>(null);
+  const { setFavorite, isFavoritePending } = useNoteFavoriteMutation();
   const initialRecentFavoriteCount = data.recentNotes.filter((note) => note.isFavorite).length;
   const currentRecentFavoriteCount = recentNotes.filter((note) => note.isFavorite).length;
   const favoriteCount = Math.max(data.totalFavorites + currentRecentFavoriteCount - initialRecentFavoriteCount, 0);
 
-  function toggleFavorite(id: string) {
+  async function changeFavorite(slug: string, favorite: boolean) {
+    setFavoriteError(null);
+
+    const result = await setFavorite(slug, favorite);
+
+    if (!result) {
+      return;
+    }
+
+    if (!result.success) {
+      setFavoriteError(result.message);
+      return;
+    }
+
     setRecentNotes((currentNotes) =>
-      currentNotes.map((note) =>
-        note.id === id
-          ? {
-              ...note,
-              isFavorite: !note.isFavorite
-            }
-          : note
-      )
+      currentNotes.map((note) => (note.id === slug ? { ...note, isFavorite: result.favorite } : note))
     );
   }
 
@@ -115,9 +124,19 @@ export function HomeClient({ data }: HomeClientProps) {
             <p className="mt-1 text-sm text-slate-600">Conteúdos variados para mostrar como a base pode ser organizada.</p>
           </div>
         </div>
+        {favoriteError ? (
+          <p role="alert" className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+            {favoriteError}
+          </p>
+        ) : null}
         <div className="grid gap-4 xl:grid-cols-3">
           {recentNotes.map((note) => (
-            <NoteCard key={note.id} note={note} onToggleFavorite={toggleFavorite} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              onFavoriteChange={changeFavorite}
+              isFavoritePending={isFavoritePending(note.id)}
+            />
           ))}
         </div>
       </section>

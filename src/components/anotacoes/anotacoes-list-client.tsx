@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { FilterBar } from "@/components/filter-bar";
 import { NoteCard } from "@/components/note-card";
+import { useNoteFavoriteMutation } from "@/hooks/use-note-favorite-mutation";
 import { Note, NoteType } from "@/types/note";
 
 type AnotacoesListClientProps = {
@@ -36,7 +37,8 @@ export function AnotacoesListClient({ initialNotes, initialArea, initialTag }: A
     area: initialArea ?? initialFilters.area,
     tag: initialTag ?? initialFilters.tag
   }));
-  const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
+  const [favoriteError, setFavoriteError] = useState<string | null>(null);
+  const { setFavorite, isFavoritePending } = useNoteFavoriteMutation();
 
   const areas = useMemo(() => ["Todas", ...uniqueValues(notes.map((note) => note.area))], [notes]);
   const categories = useMemo(() => ["Todas", ...uniqueValues(notes.map((note) => note.category))], [notes]);
@@ -68,30 +70,24 @@ export function AnotacoesListClient({ initialNotes, initialArea, initialTag }: A
     });
   }, [filters, notes]);
 
-  const toggleFavorite = useCallback((id: string) => {
-    const targetNote = notes.find((note) => note.id === id);
+  const changeFavorite = useCallback(async (slug: string, favorite: boolean) => {
+    setFavoriteError(null);
 
-    if (!targetNote) {
+    const result = await setFavorite(slug, favorite);
+
+    if (!result) {
       return;
     }
 
-    setFavoriteFeedback(
-      targetNote.isFavorite
-        ? `"${targetNote.title}" foi removida dos favoritos nesta visualização.`
-        : `"${targetNote.title}" foi marcada como favorita nesta visualização.`
-    );
+    if (!result.success) {
+      setFavoriteError(result.message);
+      return;
+    }
 
     setNotes((currentNotes) =>
-      currentNotes.map((note) =>
-        note.id === id
-          ? {
-              ...note,
-              isFavorite: !note.isFavorite
-            }
-          : note
-      )
+      currentNotes.map((note) => (note.id === slug ? { ...note, isFavorite: result.favorite } : note))
     );
-  }, [notes]);
+  }, [setFavorite]);
 
   function resetFilters() {
     setFilters(initialFilters);
@@ -99,17 +95,10 @@ export function AnotacoesListClient({ initialNotes, initialArea, initialTag }: A
 
   return (
     <>
-      {favoriteFeedback ? (
-        <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-emerald-800">{favoriteFeedback}</p>
-          <button
-            type="button"
-            onClick={() => setFavoriteFeedback(null)}
-            className="w-fit rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
-          >
-            Fechar
-          </button>
-        </div>
+      {favoriteError ? (
+        <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+          {favoriteError}
+        </p>
       ) : null}
 
       <FilterBar
@@ -167,7 +156,12 @@ export function AnotacoesListClient({ initialNotes, initialArea, initialTag }: A
         {filteredNotes.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
             {filteredNotes.map((note) => (
-              <NoteCard key={note.id} note={note} onToggleFavorite={toggleFavorite} />
+              <NoteCard
+                key={note.id}
+                note={note}
+                onFavoriteChange={changeFavorite}
+                isFavoritePending={isFavoritePending(note.id)}
+              />
             ))}
           </div>
         ) : (

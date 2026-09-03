@@ -6,6 +6,7 @@ import { MetricCard } from "@/components/metric-card";
 import { NoteCard } from "@/components/note-card";
 import { NoteTypeBadge } from "@/components/note-type-badge";
 import { PageHeader } from "@/components/page-header";
+import { useNoteFavoriteMutation } from "@/hooks/use-note-favorite-mutation";
 import type { DashboardData } from "@/lib/notes/queries";
 
 type DashboardClientProps = {
@@ -13,16 +14,17 @@ type DashboardClientProps = {
 };
 
 export function DashboardClient({ data }: DashboardClientProps) {
-  const [favoriteNotes, setFavoriteNotes] = useState(data.favoriteNotes);
-  const [favoriteCount, setFavoriteCount] = useState(data.totalFavorites);
+  const [favoriteError, setFavoriteError] = useState<string | null>(null);
+  const { setFavorite, isFavoritePending } = useNoteFavoriteMutation();
 
-  function toggleFavorite(id: string) {
-    if (!favoriteNotes.some((note) => note.id === id)) {
-      return;
+  async function changeFavorite(slug: string, favorite: boolean) {
+    setFavoriteError(null);
+
+    const result = await setFavorite(slug, favorite);
+
+    if (result && !result.success) {
+      setFavoriteError(result.message);
     }
-
-    setFavoriteNotes((currentNotes) => currentNotes.filter((note) => note.id !== id));
-    setFavoriteCount((currentCount) => Math.max(currentCount - 1, 0));
   }
 
   return (
@@ -45,7 +47,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
         <MetricCard label="Total de anotações" value={String(data.totalNotes)} helper="Dados reais da base" tone="sky" />
         <MetricCard label="Categorias" value={String(data.usedCategories)} helper="Técnicas e pessoais" tone="emerald" />
         <MetricCard label="Tags" value={String(data.usedTags)} helper="Organização rápida" tone="amber" />
-        <MetricCard label="Favoritos" value={String(favoriteCount)} helper="Conteúdos essenciais" tone="rose" />
+        <MetricCard label="Favoritos" value={String(data.totalFavorites)} helper="Conteúdos essenciais" tone="rose" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -59,9 +61,20 @@ export function DashboardClient({ data }: DashboardClientProps) {
               Ver todos
             </Link>
           </div>
+          {favoriteError ? (
+            <p role="alert" className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+              {favoriteError}
+            </p>
+          ) : null}
           <div className="grid gap-4 lg:grid-cols-3">
-            {favoriteNotes.map((note) => (
-              <NoteCard key={note.id} note={note} compact onToggleFavorite={toggleFavorite} />
+            {data.favoriteNotes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                compact
+                onFavoriteChange={changeFavorite}
+                isFavoritePending={isFavoritePending(note.id)}
+              />
             ))}
           </div>
         </div>
