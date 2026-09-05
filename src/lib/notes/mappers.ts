@@ -1,5 +1,5 @@
 import { noteTypeConfig } from "@/config/note-type-config";
-import { Note } from "@/types/note";
+import { Note, NoteSnippet } from "@/types/note";
 import type { NoteDetailsItem, NoteListItem } from "./queries";
 
 export function mapNoteListItemToUiNote(note: NoteListItem): Note {
@@ -26,8 +26,8 @@ export function mapNoteListItemToUiNote(note: NoteListItem): Note {
 export function mapNoteDetailsToUiNote(note: NoteDetailsItem): Note {
   const content = note.content ?? "";
   const description = note.summary?.trim() || createDescriptionFromContent(content);
-  const firstSnippet = note.snippets[0];
   const comparison = mapComparison(note);
+  const snippet = mapSnippet(note);
 
   const uiNote: Note = {
     id: note.slug,
@@ -49,11 +49,54 @@ export function mapNoteDetailsToUiNote(note: NoteDetailsItem): Note {
     uiNote.comparison = comparison;
   }
 
-  if (firstSnippet?.code) {
-    uiNote.code = firstSnippet.code;
+  if (snippet) {
+    uiNote.snippet = snippet;
   }
 
   return uiNote;
+}
+
+function mapSnippet(note: NoteDetailsItem): NoteSnippet | undefined {
+  if (note.type !== "SNIPPET") {
+    return undefined;
+  }
+
+  if (note.comparison) {
+    return {
+      status: "inconsistent",
+      reason: "incompatible"
+    };
+  }
+
+  if (note.snippets.length === 0) {
+    return {
+      status: "inconsistent",
+      reason: "missing"
+    };
+  }
+
+  if (note.snippets.length > 1) {
+    return {
+      status: "inconsistent",
+      reason: "multiple"
+    };
+  }
+
+  const [snippet] = note.snippets;
+
+  if (!snippet.language.trim() || !snippet.code.trim()) {
+    return {
+      status: "inconsistent",
+      reason: "invalid-fields"
+    };
+  }
+
+  return {
+    status: "valid",
+    language: snippet.language,
+    code: snippet.code,
+    explanation: snippet.explanation?.trim() ? snippet.explanation : null
+  };
 }
 
 function mapComparison(note: NoteDetailsItem) {

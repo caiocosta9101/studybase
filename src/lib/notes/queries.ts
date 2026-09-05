@@ -104,12 +104,25 @@ const editableNoteSelect = {
     select: {
       tagId: true
     }
+  },
+  comparison: {
+    select: {
+      id: true
+    }
+  },
+  snippets: {
+    select: {
+      language: true,
+      code: true,
+      explanation: true
+    }
   }
 } satisfies Prisma.NoteSelect;
 
 const editableNoteTypes: PrismaNoteType[] = [
   PrismaNoteType.SIMPLE,
   PrismaNoteType.GUIDE,
+  PrismaNoteType.SNIPPET,
   PrismaNoteType.ERROR_SOLUTION
 ];
 
@@ -125,9 +138,25 @@ type EditableNoteItem = Prisma.NoteGetPayload<{
   select: typeof editableNoteSelect;
 }>;
 
-export type EditableNoteData = Omit<EditableNoteItem, "noteTags"> & {
+type EditableBasicNoteType = "SIMPLE" | "GUIDE" | "ERROR_SOLUTION";
+
+type EditableNoteBase = Pick<
+  EditableNoteItem,
+  "slug" | "title" | "summary" | "content" | "favorite" | "areaId" | "categoryId"
+> & {
   tagIds: string[];
 };
+
+export type EditableNoteData =
+  | (EditableNoteBase & {
+      type: EditableBasicNoteType;
+    })
+  | (EditableNoteBase & {
+      type: "SNIPPET";
+      language: string;
+      code: string;
+      explanation: string | null;
+    });
 
 export type DashboardData = {
   totalNotes: number;
@@ -236,12 +265,53 @@ export async function getEditableNoteBySlug(slug: string, userId: string): Promi
     return null;
   }
 
-  const { noteTags, ...editableNote } = note;
+  const editableNote = {
+    slug: note.slug,
+    title: note.title,
+    summary: note.summary,
+    content: note.content,
+    favorite: note.favorite,
+    areaId: note.areaId,
+    categoryId: note.categoryId,
+    tagIds: note.noteTags.map((noteTag) => noteTag.tagId)
+  };
+
+  if (note.type === PrismaNoteType.SNIPPET) {
+    if (note.comparison || note.snippets.length !== 1) {
+      return null;
+    }
+
+    const [snippet] = note.snippets;
+
+    if (!snippet.language.trim() || !snippet.code.trim()) {
+      return null;
+    }
+
+    return {
+      ...editableNote,
+      type: "SNIPPET",
+      language: snippet.language,
+      code: snippet.code,
+      explanation: snippet.explanation
+    };
+  }
+
+  if (!isEditableBasicNoteType(note.type)) {
+    return null;
+  }
 
   return {
     ...editableNote,
-    tagIds: noteTags.map((noteTag) => noteTag.tagId)
+    type: note.type
   };
+}
+
+function isEditableBasicNoteType(type: PrismaNoteType): type is EditableBasicNoteType {
+  return (
+    type === PrismaNoteType.SIMPLE ||
+    type === PrismaNoteType.GUIDE ||
+    type === PrismaNoteType.ERROR_SOLUTION
+  );
 }
 
 export async function getNotesForList(userId: string) {

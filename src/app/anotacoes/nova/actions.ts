@@ -4,14 +4,27 @@ import { revalidatePath } from "next/cache";
 import { requireCurrentUser } from "@/lib/auth/session";
 import {
   createBasicNote,
+  createSnippetNote,
   InvalidNoteCatalogError,
   NoteSlugGenerationError,
   type CreatableNoteType
 } from "@/lib/notes/mutations";
 
-const creatableNoteTypes = new Set<CreatableNoteType>(["SIMPLE", "GUIDE", "ERROR_SOLUTION"]);
+type AuthorizedCreateNoteType = CreatableNoteType | "SNIPPET";
 
-export type CreateNoteField = "title" | "summary" | "content" | "type" | "area" | "category" | "tags";
+const creatableNoteTypes = new Set<AuthorizedCreateNoteType>(["SIMPLE", "GUIDE", "SNIPPET", "ERROR_SOLUTION"]);
+
+export type CreateNoteField =
+  | "title"
+  | "summary"
+  | "content"
+  | "type"
+  | "area"
+  | "category"
+  | "tags"
+  | "language"
+  | "code"
+  | "explanation";
 
 export type CreateNoteActionResult =
   | {
@@ -35,10 +48,25 @@ export async function createNoteAction(formData: FormData): Promise<CreateNoteAc
   let slug: string;
 
   try {
-    const note = await createBasicNote({
-      ...parsedInput.data,
-      userId: currentUser.id
-    });
+    const note =
+      parsedInput.data.type === "SNIPPET"
+        ? await createSnippetNote({
+            title: parsedInput.data.title,
+            summary: parsedInput.data.summary,
+            content: parsedInput.data.content,
+            favorite: parsedInput.data.favorite,
+            areaId: parsedInput.data.areaId,
+            categoryId: parsedInput.data.categoryId,
+            tagIds: parsedInput.data.tagIds,
+            userId: currentUser.id,
+            language: parsedInput.data.language,
+            code: parsedInput.data.code,
+            explanation: parsedInput.data.explanation
+          })
+        : await createBasicNote({
+            ...parsedInput.data,
+            userId: currentUser.id
+          });
 
     slug = note.slug;
   } catch (error) {
@@ -85,6 +113,9 @@ function parseFormData(formData: FormData) {
   const areaIdValue = formData.get("areaId");
   const categoryIdValue = formData.get("categoryId");
   const favoriteValue = formData.get("favorite");
+  const languageValue = formData.get("language");
+  const codeValue = formData.get("code");
+  const explanationValue = formData.get("explanation");
   const tagIdValues = formData.getAll("tagIds");
   const fieldErrors: Partial<Record<CreateNoteField, string>> = {};
 
@@ -94,12 +125,17 @@ function parseFormData(formData: FormData) {
   const type = typeof typeValue === "string" ? typeValue : "";
   const areaId = typeof areaIdValue === "string" ? areaIdValue.trim() : "";
   const categoryId = typeof categoryIdValue === "string" ? categoryIdValue.trim() : "";
+  const language = typeof languageValue === "string" ? languageValue.trim() : "";
+  const code = typeof codeValue === "string" ? codeValue : "";
+  const explanation = typeof explanationValue === "string" ? explanationValue.trim() : "";
 
   if (title.length < 3) {
     fieldErrors.title = "Use um título com pelo menos 3 caracteres.";
   }
 
-  if (!content) {
+  if (contentValue !== null && typeof contentValue !== "string") {
+    fieldErrors.content = "Informe um conteúdo válido.";
+  } else if (type !== "SNIPPET" && !content) {
     fieldErrors.content = "Informe o conteúdo da anotação.";
   }
 
@@ -128,6 +164,20 @@ function parseFormData(formData: FormData) {
     fieldErrors.summary = "Informe um resumo válido.";
   }
 
+  if (type === "SNIPPET") {
+    if (!language) {
+      fieldErrors.language = "Informe a linguagem do snippet.";
+    }
+
+    if (!code.trim()) {
+      fieldErrors.code = "Informe o código do snippet.";
+    }
+
+    if (explanationValue !== null && typeof explanationValue !== "string") {
+      fieldErrors.explanation = "Informe uma explicação válida.";
+    }
+  }
+
   const favorite = favoriteValue === "true";
 
   if (favoriteValue !== null && favoriteValue !== "true" && favoriteValue !== "false") {
@@ -141,6 +191,25 @@ function parseFormData(formData: FormData) {
       message: "Revise os campos destacados antes de salvar.",
       fieldErrors
     });
+  }
+
+  if (type === "SNIPPET") {
+    return {
+      success: true as const,
+      data: {
+        title,
+        summary: summary || null,
+        content: content || null,
+        type,
+        areaId,
+        categoryId,
+        tagIds,
+        favorite,
+        language,
+        code,
+        explanation: explanation || null
+      }
+    };
   }
 
   return {
@@ -168,8 +237,8 @@ function invalidFormResult(result: Omit<Extract<CreateNoteActionResult, { succes
   };
 }
 
-function isCreatableNoteType(value: string): value is CreatableNoteType {
-  return creatableNoteTypes.has(value as CreatableNoteType);
+function isCreatableNoteType(value: string): value is AuthorizedCreateNoteType {
+  return creatableNoteTypes.has(value as AuthorizedCreateNoteType);
 }
 
 function revalidateAffectedPaths(hasTags: boolean, favorite: boolean) {

@@ -23,7 +23,12 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { setFavorite, isFavoritePending } = useNoteFavoriteMutation();
-  const canManage = basicNoteTypes.has(note.type);
+  const canEdit = basicNoteTypes.has(note.type) || note.snippet?.status === "valid";
+  const canDeleteSnippet =
+    note.type === "SNIPPET" &&
+    (note.snippet?.status === "valid" ||
+      (note.snippet?.status === "inconsistent" && note.snippet.reason !== "incompatible"));
+  const canDelete = basicNoteTypes.has(note.type) || canDeleteSnippet;
   const favoritePending = isFavoritePending(note.id);
 
   async function changeFavorite() {
@@ -89,7 +94,7 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
           Voltar para anotações
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          {canManage ? (
+          {canEdit ? (
             <Link
               href={`/anotacoes/${encodeURIComponent(note.id)}/editar`}
               aria-disabled={isDeleting}
@@ -100,7 +105,7 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
               Editar
             </Link>
           ) : null}
-          {canManage ? (
+          {canDelete ? (
             <button
               type="button"
               disabled={isDeleting}
@@ -126,7 +131,7 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
         </div>
       </div>
 
-      {canManage && isDeleteConfirmationOpen ? (
+      {canDelete && isDeleteConfirmationOpen ? (
         <section
           aria-busy={isDeleting}
           aria-labelledby="delete-note-title"
@@ -220,10 +225,33 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
             </div>
           ) : null}
 
-          {note.code ? (
-            <pre className="mt-7 overflow-x-auto rounded-lg bg-slate-950 p-4 text-sm leading-6 text-slate-100">
-              <code>{note.code}</code>
-            </pre>
+          {note.snippet?.status === "valid" ? (
+            <div className="mt-7 rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-base font-bold text-slate-950">Snippet</h3>
+                <span className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-bold text-amber-800">
+                  {note.snippet.language}
+                </span>
+              </div>
+              <pre className="mt-4 overflow-x-auto rounded-lg bg-slate-950 p-4 text-sm leading-6 text-slate-100">
+                <code>{note.snippet.code}</code>
+              </pre>
+              {note.snippet.explanation ? (
+                <div className="mt-4 rounded-lg border border-amber-200 bg-white p-4">
+                  <h4 className="text-sm font-bold text-slate-950">Explicação</h4>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+                    {note.snippet.explanation}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ) : note.snippet?.status === "inconsistent" ? (
+            <div role="status" className="mt-7 rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <h3 className="text-base font-bold text-amber-950">Estrutura de snippet indisponível</h3>
+              <p className="mt-2 text-sm leading-6 text-amber-900">
+                {getSnippetInconsistencyMessage(note.snippet.reason)}
+              </p>
+            </div>
           ) : null}
 
           {note.solution ? (
@@ -268,4 +296,15 @@ export function NoteDetailsView({ note }: NoteDetailsViewProps) {
       </section>
     </article>
   );
+}
+
+function getSnippetInconsistencyMessage(reason: Extract<Note["snippet"], { status: "inconsistent" }>["reason"]) {
+  const messages = {
+    missing: "Esta anotação não possui o bloco estruturado necessário para exibir o snippet.",
+    multiple: "Esta anotação possui mais de um bloco estruturado e não pode ser exibida como um único snippet.",
+    incompatible: "Esta anotação possui relações estruturadas incompatíveis com o tipo snippet.",
+    "invalid-fields": "O bloco estruturado desta anotação não possui linguagem e código válidos."
+  } satisfies Record<typeof reason, string>;
+
+  return messages[reason];
 }

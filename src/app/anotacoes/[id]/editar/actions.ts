@@ -6,10 +6,25 @@ import { requireCurrentUser } from "@/lib/auth/session";
 import {
   EditableNoteNotFoundError,
   InvalidNoteCatalogError,
-  updateBasicNote
+  updateBasicNote,
+  updateSnippetNote,
+  type CreatableNoteType
 } from "@/lib/notes/mutations";
 
-export type EditNoteField = "title" | "summary" | "content" | "area" | "category" | "tags";
+type EditableNoteType = CreatableNoteType | "SNIPPET";
+
+const editableNoteTypes = new Set<EditableNoteType>(["SIMPLE", "GUIDE", "SNIPPET", "ERROR_SOLUTION"]);
+
+export type EditNoteField =
+  | "title"
+  | "summary"
+  | "content"
+  | "area"
+  | "category"
+  | "tags"
+  | "language"
+  | "code"
+  | "explanation";
 
 export type UpdateNoteActionResult =
   | {
@@ -39,11 +54,33 @@ export async function updateNoteAction(slug: string, formData: FormData): Promis
   let stableSlug: string;
 
   try {
-    const note = await updateBasicNote({
-      slug: targetSlug,
-      ...parsedInput.data,
-      userId: currentUser.id
-    });
+    const note =
+      parsedInput.data.type === "SNIPPET"
+        ? await updateSnippetNote({
+            slug: targetSlug,
+            title: parsedInput.data.title,
+            summary: parsedInput.data.summary,
+            content: parsedInput.data.content,
+            favorite: parsedInput.data.favorite,
+            areaId: parsedInput.data.areaId,
+            categoryId: parsedInput.data.categoryId,
+            tagIds: parsedInput.data.tagIds,
+            userId: currentUser.id,
+            language: parsedInput.data.language,
+            code: parsedInput.data.code,
+            explanation: parsedInput.data.explanation
+          })
+        : await updateBasicNote({
+            slug: targetSlug,
+            title: parsedInput.data.title,
+            summary: parsedInput.data.summary,
+            content: parsedInput.data.content,
+            favorite: parsedInput.data.favorite,
+            areaId: parsedInput.data.areaId,
+            categoryId: parsedInput.data.categoryId,
+            tagIds: parsedInput.data.tagIds,
+            userId: currentUser.id
+          });
 
     stableSlug = note.slug;
   } catch (error) {
@@ -83,23 +120,33 @@ function parseFormData(formData: FormData) {
   const titleValue = formData.get("title");
   const summaryValue = formData.get("summary");
   const contentValue = formData.get("content");
+  const typeValue = formData.get("type");
   const areaIdValue = formData.get("areaId");
   const categoryIdValue = formData.get("categoryId");
   const favoriteValue = formData.get("favorite");
+  const languageValue = formData.get("language");
+  const codeValue = formData.get("code");
+  const explanationValue = formData.get("explanation");
   const tagIdValues = formData.getAll("tagIds");
   const fieldErrors: Partial<Record<EditNoteField, string>> = {};
 
   const title = typeof titleValue === "string" ? titleValue.trim() : "";
   const summary = typeof summaryValue === "string" ? summaryValue.trim() : "";
   const content = typeof contentValue === "string" ? contentValue.trim() : "";
+  const type = typeof typeValue === "string" ? typeValue : "";
   const areaId = typeof areaIdValue === "string" ? areaIdValue.trim() : "";
   const categoryId = typeof categoryIdValue === "string" ? categoryIdValue.trim() : "";
+  const language = typeof languageValue === "string" ? languageValue.trim() : "";
+  const code = typeof codeValue === "string" ? codeValue : "";
+  const explanation = typeof explanationValue === "string" ? explanationValue.trim() : "";
 
   if (title.length < 3) {
     fieldErrors.title = "Use um título com pelo menos 3 caracteres.";
   }
 
-  if (!content) {
+  if (contentValue !== null && typeof contentValue !== "string") {
+    fieldErrors.content = "Informe um conteúdo válido.";
+  } else if (type !== "SNIPPET" && !content) {
     fieldErrors.content = "Informe o conteúdo da anotação.";
   }
 
@@ -124,17 +171,50 @@ function parseFormData(formData: FormData) {
     fieldErrors.summary = "Informe um resumo válido.";
   }
 
+  if (type === "SNIPPET") {
+    if (!language) {
+      fieldErrors.language = "Informe a linguagem do snippet.";
+    }
+
+    if (!code.trim()) {
+      fieldErrors.code = "Informe o código do snippet.";
+    }
+
+    if (explanationValue !== null && typeof explanationValue !== "string") {
+      fieldErrors.explanation = "Informe uma explicação válida.";
+    }
+  }
+
   if (favoriteValue !== "true" && favoriteValue !== "false") {
     return invalidFormResult({
       message: "Os dados enviados não são válidos. Revise o formulário."
     });
   }
 
-  if (Object.keys(fieldErrors).length > 0) {
+  if (Object.keys(fieldErrors).length > 0 || !isEditableNoteType(type)) {
     return invalidFormResult({
       message: "Revise os campos destacados antes de salvar.",
       fieldErrors
     });
+  }
+
+  if (type === "SNIPPET") {
+    return {
+      success: true as const,
+      data: {
+        title,
+        summary: summary || null,
+        content: content || null,
+        type,
+        areaId,
+        categoryId,
+        tagIds,
+        favorite: favoriteValue === "true",
+        language,
+        code,
+        explanation: explanation || null
+      }
+    };
   }
 
   return {
@@ -143,12 +223,17 @@ function parseFormData(formData: FormData) {
       title,
       summary: summary || null,
       content,
+      type,
       areaId,
       categoryId,
       tagIds,
       favorite: favoriteValue === "true"
     }
   };
+}
+
+function isEditableNoteType(value: string): value is EditableNoteType {
+  return editableNoteTypes.has(value as EditableNoteType);
 }
 
 function invalidFormResult(result: Omit<Extract<UpdateNoteActionResult, { success: false }>, "success">) {

@@ -20,6 +20,9 @@ export function EditNoteForm({ note, catalog }: EditNoteFormProps) {
   const [title, setTitle] = useState(note.title);
   const [summary, setSummary] = useState(note.summary ?? "");
   const [content, setContent] = useState(note.content ?? "");
+  const [language, setLanguage] = useState(note.type === "SNIPPET" ? note.language : "");
+  const [code, setCode] = useState(note.type === "SNIPPET" ? note.code : "");
+  const [explanation, setExplanation] = useState(note.type === "SNIPPET" ? note.explanation ?? "" : "");
   const [areaId, setAreaId] = useState(note.areaId);
   const [categoryId, setCategoryId] = useState(note.categoryId);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(note.tagIds);
@@ -57,10 +60,17 @@ export function EditNoteForm({ note, catalog }: EditNoteFormProps) {
     formData.set("title", title);
     formData.set("summary", summary);
     formData.set("content", content);
+    formData.set("type", note.type);
     formData.set("areaId", areaId);
     formData.set("categoryId", categoryId);
     formData.set("favorite", String(isFavorite));
     selectedTagIds.forEach((tagId) => formData.append("tagIds", tagId));
+
+    if (note.type === "SNIPPET") {
+      formData.set("language", language);
+      formData.set("code", code);
+      formData.set("explanation", explanation);
+    }
 
     const result = await updateNoteAction(note.slug, formData);
 
@@ -95,7 +105,15 @@ export function EditNoteForm({ note, catalog }: EditNoteFormProps) {
       nextErrors.category = "Selecione uma categoria pertencente à área escolhida.";
     }
 
-    if (!content.trim()) {
+    if (note.type === "SNIPPET") {
+      if (!language.trim()) {
+        nextErrors.language = "Informe a linguagem do snippet.";
+      }
+
+      if (!code.trim()) {
+        nextErrors.code = "Informe o código do snippet.";
+      }
+    } else if (!content.trim()) {
       nextErrors.content = "Informe o conteúdo da anotação.";
     }
 
@@ -197,7 +215,9 @@ export function EditNoteForm({ note, catalog }: EditNoteFormProps) {
             </label>
 
             <label className="grid gap-2">
-              <span className="text-sm font-bold text-slate-900">Conteúdo</span>
+              <span className="text-sm font-bold text-slate-900">
+                {note.type === "SNIPPET" ? "Conteúdo geral (opcional)" : "Conteúdo"}
+              </span>
               <textarea
                 name="content"
                 value={content}
@@ -216,6 +236,84 @@ export function EditNoteForm({ note, catalog }: EditNoteFormProps) {
               />
               {errors.content ? <span className="text-sm font-semibold text-rose-700">{errors.content}</span> : null}
             </label>
+
+            {note.type === "SNIPPET" ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+                <h3 className="text-base font-bold text-amber-950">Código do snippet</h3>
+                <p className="mt-1 text-sm leading-6 text-amber-900">
+                  Atualize a linguagem, o código e a explicação sem alterar a identidade do snippet.
+                </p>
+
+                <div className="mt-4 grid gap-5">
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold text-slate-900">Linguagem</span>
+                    <input
+                      name="language"
+                      value={language}
+                      disabled={isSubmitting}
+                      onChange={(event) => {
+                        setLanguage(event.target.value);
+                        clearFieldError("language");
+                      }}
+                      aria-invalid={Boolean(errors.language)}
+                      className={`h-12 rounded-lg border bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
+                        errors.language
+                          ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
+                          : "border-amber-300 focus:border-amber-500 focus:ring-amber-100"
+                      }`}
+                      placeholder="Ex: TypeScript"
+                    />
+                    {errors.language ? (
+                      <span className="text-sm font-semibold text-rose-700">{errors.language}</span>
+                    ) : null}
+                  </label>
+
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold text-slate-900">Código</span>
+                    <textarea
+                      name="code"
+                      value={code}
+                      disabled={isSubmitting}
+                      onChange={(event) => {
+                        setCode(event.target.value);
+                        clearFieldError("code");
+                      }}
+                      aria-invalid={Boolean(errors.code)}
+                      className={`min-h-64 rounded-lg border bg-slate-950 px-4 py-3 font-mono text-sm leading-6 text-slate-100 outline-none transition placeholder:text-slate-500 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
+                        errors.code
+                          ? "border-rose-400 focus:border-rose-500 focus:ring-rose-100"
+                          : "border-slate-700 focus:border-amber-500 focus:ring-amber-100"
+                      }`}
+                      placeholder="Cole ou escreva o código preservando a indentação."
+                    />
+                    {errors.code ? <span className="text-sm font-semibold text-rose-700">{errors.code}</span> : null}
+                  </label>
+
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold text-slate-900">Explicação (opcional)</span>
+                    <textarea
+                      name="explanation"
+                      value={explanation}
+                      disabled={isSubmitting}
+                      onChange={(event) => {
+                        setExplanation(event.target.value);
+                        clearFieldError("explanation");
+                      }}
+                      aria-invalid={Boolean(errors.explanation)}
+                      className={`min-h-28 rounded-lg border bg-white px-4 py-3 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-70 ${
+                        errors.explanation
+                          ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
+                          : "border-amber-300 focus:border-amber-500 focus:ring-amber-100"
+                      }`}
+                      placeholder="Registre quando usar ou o que este código resolve."
+                    />
+                    {errors.explanation ? (
+                      <span className="text-sm font-semibold text-rose-700">{errors.explanation}</span>
+                    ) : null}
+                  </label>
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
 

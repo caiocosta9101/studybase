@@ -25,6 +25,20 @@ export type CreateBasicNoteInput = {
   userId: string;
 };
 
+export type CreateSnippetNoteInput = {
+  title: string;
+  summary: string | null;
+  content: string | null;
+  favorite: boolean;
+  areaId: string;
+  categoryId: string;
+  tagIds: string[];
+  userId: string;
+  language: string;
+  code: string;
+  explanation: string | null;
+};
+
 export type UpdateBasicNoteInput = {
   slug: string;
   title: string;
@@ -37,7 +51,22 @@ export type UpdateBasicNoteInput = {
   userId: string;
 };
 
-export type DeleteBasicNoteInput = {
+export type UpdateSnippetNoteInput = {
+  slug: string;
+  title: string;
+  summary: string | null;
+  content: string | null;
+  favorite: boolean;
+  areaId: string;
+  categoryId: string;
+  tagIds: string[];
+  userId: string;
+  language: string;
+  code: string;
+  explanation: string | null;
+};
+
+export type DeleteBasicOrSnippetNoteInput = {
   slug: string;
   userId: string;
 };
@@ -128,6 +157,63 @@ export async function createBasicNote(input: CreateBasicNoteInput) {
   throw new NoteSlugGenerationError();
 }
 
+export async function createSnippetNote(input: CreateSnippetNoteInput) {
+  const tagIds = Array.from(new Set(input.tagIds));
+  const baseSlug = createSlug(input.title);
+
+  for (let attempt = 0; attempt < maximumSlugAttempts; attempt += 1) {
+    const slug = createSlugCandidate(baseSlug, attempt);
+
+    try {
+      return await prisma.$transaction(async (transaction) => {
+        await validateCatalogSelections(transaction, input.areaId, input.categoryId, tagIds);
+
+        const note = await transaction.note.create({
+          data: {
+            title: input.title,
+            slug,
+            summary: input.summary,
+            content: input.content,
+            type: PrismaNoteType.SNIPPET,
+            favorite: input.favorite,
+            areaId: input.areaId,
+            categoryId: input.categoryId,
+            userId: input.userId,
+            snippets: {
+              create: {
+                language: input.language.trim(),
+                code: input.code,
+                explanation: input.explanation
+              }
+            }
+          },
+          select: {
+            id: true,
+            slug: true
+          }
+        });
+
+        if (tagIds.length > 0) {
+          await transaction.noteTag.createMany({
+            data: tagIds.map((tagId) => ({
+              noteId: note.id,
+              tagId
+            }))
+          });
+        }
+
+        return note;
+      });
+    } catch (error) {
+      if (!isNoteSlugUniqueConstraintViolation(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new NoteSlugGenerationError();
+}
+
 export async function updateBasicNote(input: UpdateBasicNoteInput) {
   const tagIds = Array.from(new Set(input.tagIds));
 
@@ -188,20 +274,125 @@ export async function updateBasicNote(input: UpdateBasicNoteInput) {
   });
 }
 
-export async function deleteBasicNote(input: DeleteBasicNoteInput) {
+export async function updateSnippetNote(input: UpdateSnippetNoteInput) {
+  const tagIds = Array.from(new Set(input.tagIds));
+  const language = input.language.trim();
+
+  return prisma.$transaction(async (transaction) => {
+    const note = await transaction.note.findFirst({
+      where: {
+        slug: input.slug,
+        userId: input.userId,
+        type: PrismaNoteType.SNIPPET
+      },
+      select: {
+        id: true,
+        slug: true,
+        comparison: {
+          select: {
+            id: true
+          }
+        },
+        snippets: {
+          select: {
+            id: true,
+            language: true,
+            code: true,
+            explanation: true
+          }
+        }
+      }
+    });
+
+    if (!note || note.comparison || note.snippets.length !== 1) {
+      throw new EditableNoteNotFoundError();
+    }
+
+    const [snippet] = note.snippets;
+
+    if (!snippet.language.trim() || !snippet.code.trim()) {
+      throw new EditableNoteNotFoundError();
+    }
+
+    await validateCatalogSelections(transaction, input.areaId, input.categoryId, tagIds);
+
+    const updatedNote = await transaction.note.update({
+      where: {
+        id: note.id
+      },
+      data: {
+        title: input.title,
+        summary: input.summary,
+        content: input.content,
+        favorite: input.favorite,
+        areaId: input.areaId,
+        categoryId: input.categoryId
+      },
+      select: {
+        slug: true
+      }
+    });
+
+    if (
+      snippet.language !== language ||
+      snippet.code !== input.code ||
+      snippet.explanation !== input.explanation
+    ) {
+      await transaction.snippet.update({
+        where: {
+          id: snippet.id
+        },
+        data: {
+          language,
+          code: input.code,
+          explanation: input.explanation
+        }
+      });
+    }
+
+    await transaction.noteTag.deleteMany({
+      where: {
+        noteId: note.id
+      }
+    });
+
+    if (tagIds.length > 0) {
+      await transaction.noteTag.createMany({
+        data: tagIds.map((tagId) => ({
+          noteId: note.id,
+          tagId
+        }))
+      });
+    }
+
+    return updatedNote;
+  });
+}
+
+export async function deleteBasicOrSnippetNote(input: DeleteBasicOrSnippetNoteInput) {
   return prisma.note.deleteMany({
     where: {
       slug: input.slug,
       userId: input.userId,
-      type: {
-        in: basicNoteTypes
-      },
-      comparison: {
-        is: null
-      },
-      snippets: {
-        none: {}
-      }
+      OR: [
+        {
+          type: {
+            in: basicNoteTypes
+          },
+          comparison: {
+            is: null
+          },
+          snippets: {
+            none: {}
+          }
+        },
+        {
+          type: PrismaNoteType.SNIPPET,
+          comparison: {
+            is: null
+          }
+        }
+      ]
     }
   });
 }

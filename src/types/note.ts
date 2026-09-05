@@ -1,5 +1,17 @@
 export type NoteType = "SIMPLE" | "GUIDE" | "COMPARISON" | "SNIPPET" | "ERROR_SOLUTION";
 
+export type NoteSnippet =
+  | {
+      status: "valid";
+      language: string;
+      code: string;
+      explanation: string | null;
+    }
+  | {
+      status: "inconsistent";
+      reason: "missing" | "multiple" | "incompatible" | "invalid-fields";
+    };
+
 export type Note = {
   id: string;
   title: string;
@@ -18,6 +30,6 @@ export type Note = {
     label: string;
     points: string[];
   }>;
-  code?: string;
+  snippet?: NoteSnippet;
   solution?: string;
 };

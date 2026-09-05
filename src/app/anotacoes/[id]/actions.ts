@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { requireCurrentUser } from "@/lib/auth/session";
-import { deleteBasicNote } from "@/lib/notes/mutations";
+import { deleteBasicOrSnippetNote } from "@/lib/notes/mutations";
 
 export type DeleteNoteActionResult =
   | {
@@ -25,7 +25,7 @@ export async function deleteNoteAction(slug: string): Promise<DeleteNoteActionRe
   let deletedCount: number;
 
   try {
-    const result = await deleteBasicNote({
+    const result = await deleteBasicOrSnippetNote({
       slug: targetSlug,
       userId: currentUser.id
     });
