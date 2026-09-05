@@ -1,12 +1,12 @@
-Última subfase concluída: Fase 5D — Favoritos persistentes
+Última subfase concluída: Fase 5E — CRUD estruturado de `SNIPPET`
 Fase atual: Fase 5 — Fluxos persistentes e refinamento com dados reais, em andamento
-Próxima subfase: Fase 5E — CRUD estruturado de `SNIPPET`
+Próxima subfase: Fase 5F — CRUD estruturado de `COMPARISON`
 
 Banco local: studybase_dev
 Migration: aplicada
 Seed: executado
 Prisma Studio: validado
-Build: passou nas validações técnicas da Fase 5D
+Build: passou nas validações técnicas da Fase 5E
 
 Últimos marcos:
 - Fase 3A: Prisma e schema inicial concluídos.
@@ -35,6 +35,7 @@ Build: passou nas validações técnicas da Fase 5D
 - Fase 5B: edição real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada.
 - Fase 5C: exclusão real de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` concluída e validada, fechando seu CRUD persistente básico.
 - Fase 5D: ações rápidas de favorito persistentes concluídas e validadas nos cinco tipos de anotação.
+- Fase 5E: CRUD estruturado de `SNIPPET` concluído, auditado e validado manualmente com sessão autenticada.
 - Commit de implementação da Fase 4A: `99e1ebd feat: prepara credencial da conta inicial`.
 - Commit de implementação da Fase 4B: `56158fb feat: implementa login logout e sessao`.
 - Commit de implementação da Fase 4C: `9bc1a37 feat: protege rotas e isola leituras por usuario`.
@@ -44,6 +45,7 @@ Build: passou nas validações técnicas da Fase 5D
 - Commit de implementação da Fase 5B: `6f9496c feat: implementa edicao real de anotacoes`.
 - Commit de implementação da Fase 5C: `d9acb90 feat: implementa exclusao real de anotacoes`.
 - Commit de implementação da Fase 5D: `f228a4f feat: implementa favoritos persistentes`.
+- Commit de implementação da Fase 5E: `1aba01f feat: implementa crud estruturado de snippets`.
 
 Entregas concluídas da Fase 3D:
 - `/` busca métricas e notas recentes reais do PostgreSQL usando Prisma.
@@ -183,6 +185,22 @@ Entregas concluídas da Fase 5D:
 - `npm.cmd run type-check`, `npm.cmd run build` e `git diff --check` passaram.
 - Não houve alteração de schema, migration, seed, dependência ou variável de ambiente; o seed permaneceu intacto e não foi executado.
 
+Entregas concluídas da Fase 5E:
+- O detalhe representa `SNIPPET` de forma estruturada, com linguagem, código completo e explicação opcional, preservando a formatação do código.
+- A leitura deixou de escolher silenciosamente `snippets[0]` e passou a tratar estados ausente, múltiplo, inválido ou incompatível de forma controlada.
+- `/anotacoes/nova` permite criar `SNIPPET` com linguagem e código obrigatórios, conteúdo geral opcional e exatamente um filho estruturado.
+- `Note`, `Snippet`, validação do catálogo e `NoteTag` são tratados atomicamente na criação.
+- A edição estruturada é permitida somente para nota própria `SNIPPET` com exatamente um filho válido e sem `Comparison`.
+- O `Snippet` existente é atualizado com ID e data de criação preservados; slug e tipo da nota permanecem imutáveis.
+- `Note.updatedAt` avança em toda edição completa e `Snippet.updatedAt` avança somente quando os dados estruturados mudam.
+- A exclusão de nota própria `SNIPPET` sem `Comparison` aceita zero, um ou vários filhos e usa os cascades existentes para `Snippet` e `NoteTag`.
+- Ownership, tipo e elegibilidade são confirmados no servidor; nenhum `userId` ou `Snippet.id` recebido do cliente autoriza escrita.
+- Os três tipos básicos, o favorito rápido da Fase 5D e a leitura de `COMPARISON` permaneceram funcionando.
+- `COMPARISON` continua sem criação, edição ou exclusão, e linguagem, código e explicação não foram incluídos na busca.
+- `npm.cmd run type-check`, `npm.cmd run build`, `git diff --check` e `git diff --cached --check` passaram.
+- O usuário aprovou os testes manuais autenticados de criação, detalhe/reload, edição, favorito rápido, exclusão, regressão básica e bloqueio do CRUD de `COMPARISON`.
+- Não houve alteração de schema, migration, seed, dependência ou variável de ambiente; o seed permaneceu intacto e não foi executado.
+
 Estado atual da Fase 5:
 - A Fase 5 está em andamento e sua divisão em 5A–5H foi aprovada.
 - Fase 5A — Criação real de anotações básicas: concluída e registrada no commit `4761324 feat: implementa criacao real de anotacoes`.
@@ -193,16 +211,17 @@ Estado atual da Fase 5:
 - Fase 5B — Edição real de anotações básicas: concluída e registrada no commit `6f9496c feat: implementa edicao real de anotacoes`.
 - Fase 5C — Exclusão real e fechamento do CRUD básico: concluída e registrada no commit `d9acb90 feat: implementa exclusao real de anotacoes`.
 - O CRUD persistente básico de `SIMPLE`, `GUIDE` e `ERROR_SOLUTION` está fechado pelas Fases 5A, 5B e 5C, com leitura real já existente.
-- Fase 5D — Favoritos persistentes nas ações rápidas: concluída funcionalmente e registrada no commit `f228a4f feat: implementa favoritos persistentes`; ainda falta o commit documental e a publicação dos dois commits.
+- Fase 5D — Favoritos persistentes nas ações rápidas: concluída, documentada e publicada nos commits `f228a4f feat: implementa favoritos persistentes` e `7decaa6 docs: registra conclusao da fase 5d`.
 - As ações rápidas de favorito são persistentes nos cinco tipos, preservam `updatedAt` e mantêm ownership obtido da sessão.
-- Fase 5E — CRUD estruturado de `SNIPPET`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
+- Fase 5E — CRUD estruturado de `SNIPPET`: concluída funcionalmente e registrada no commit `1aba01f feat: implementa crud estruturado de snippets`; documentação consolidada nesta atualização.
+- A 5E implementa leitura, criação, edição e exclusão estruturadas com ownership, atomicidade, tratamento defensivo de estados inconsistentes e preservação dos fluxos anteriores.
 - Fase 5F — CRUD estruturado de `COMPARISON`: pendente e condicionado à aprovação específica de suas regras funcionais mínimas.
 - Fase 5G — Refinamento de busca e filtros: pendente.
 - Fase 5H — Estados, consistência visual e fechamento funcional: pendente.
 - Produção, banco de produção e deploy permanecem fora da Fase 5. Depois da 5H haverá uma revisão separada de prontidão, ainda sem nome ou numeração.
 
 Próximo passo recomendado:
-- Concluir o commit documental e publicar os commits funcional e documental da Fase 5D; depois, revisar e aprovar as regras funcionais mínimas da Fase 5E antes de planejá-la ou implementá-la.
+- Revisar e aprovar as regras funcionais mínimas da Fase 5F — CRUD estruturado de `COMPARISON` antes de planejá-la ou implementá-la.
 
 Estado consolidado das Fases 3 e 4:
 - As Fases 3A, 3B, 3C e 3D estão concluídas.

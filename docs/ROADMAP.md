@@ -366,11 +366,22 @@ Commit de implementação: `f228a4f feat: implementa favoritos persistentes`.
 
 ### Fase 5E — CRUD estruturado de `SNIPPET`
 
-Objetivo: implementar criação, edição e exclusão de snippets preservando seus dados estruturados.
+Objetivo: implementar leitura, criação, edição e exclusão de snippets preservando seus dados estruturados.
 
-Pré-requisito: revisão e aprovação específica das regras funcionais mínimas de `SNIPPET` antes de qualquer planejamento de implementação.
+Status: concluída.
 
-Status: pendente.
+Foram entregues:
+
+* leitura estruturada de linguagem, código e explicação no detalhe;
+* tratamento controlado de snippets ausentes, múltiplos, inválidos ou incompatíveis;
+* criação atômica de `Note`, exatamente um `Snippet` e suas associações `NoteTag`;
+* edição somente de snippet estruturalmente válido, com ownership e invariantes revalidados na transação;
+* atualização do filho existente, preservando seu ID e sua data de criação;
+* exclusão condicional de nota `SNIPPET` própria sem `Comparison`, usando os cascades existentes;
+* preservação dos tipos básicos, favoritos persistentes e leitura de `COMPARISON`;
+* validações automáticas e testes manuais autenticados concluídos.
+
+Commit de implementação: `1aba01f feat: implementa crud estruturado de snippets`.
 
 ### Fase 5F — CRUD estruturado de `COMPARISON`
 
@@ -394,7 +405,7 @@ Status: pendente.
 
 Produção, banco de produção e deploy não fazem parte da Fase 5. Depois da conclusão da Fase 5H deverá ocorrer uma revisão separada de prontidão para produção/deploy, ainda sem nome ou numeração definidos.
 
-Próxima subfase: Fase 5E — CRUD estruturado de `SNIPPET`, condicionada à revisão e aprovação específica de suas regras funcionais mínimas.
+Próxima subfase: Fase 5F — CRUD estruturado de `COMPARISON`, condicionada à revisão e aprovação específica de suas regras funcionais mínimas.
 
 ---
 
